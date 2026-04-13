@@ -1,0 +1,10 @@
+generatorName: go-server
+inputSpec: /specs/openapi/logistics.yaml
+outputDir: /generated/go
+templateDir: /templates/go-server
+additionalProperties:
+  packageName: logistics
+  generateInterfaces: "true"
+  sourceFolder: src
+  router: mux
+  serverPort: "8080"
