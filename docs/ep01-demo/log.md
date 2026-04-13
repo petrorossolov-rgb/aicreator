@@ -67,3 +67,21 @@
 - **Files changed**: `demo/scripts/format-python.sh`, `demo/scripts/validate-python.sh`
 - **Learnings**: openapi-generator Python output has 170+ ruff issues. `--unsafe-fixes` is needed for generated code. E501 (line too long) and E721 (`== object` comparison) are unfixable patterns in generated code — must be ignored. `python3 -m compileall -q` is sufficient for syntax validation.
 - **Patterns**: For generated Python code, ruff check needs `--ignore=E501,E721 --unsafe-fixes` to handle openapi-generator patterns.
+
+## [2026-04-13] — [T11] Docker Compose: full pipeline integration
+- **Status**: ✅ Done
+- **Files changed**: `demo/docker-compose.yml`, `demo/scripts/format-kotlin.sh`
+- **Learnings**: ktlint `max-line-length` rule must also be disabled for generated protobuf code (long lines in Kotlin DSL extensions). Docker Compose v2 `service_completed_successfully` condition chains services correctly. Determinism verified — source files are byte-identical across runs; only `__pycache__/*.pyc` and Go `README.md` differ (timestamp artifacts).
+- **Patterns**: For docker-compose with one-shot generation services, use `condition: service_completed_successfully` to chain dependencies. No `version:` key needed in Compose v2.
+
+## [2026-04-13] — [T11a] Negative test: pipeline on invalid input
+- **Status**: ✅ Done
+- **Files changed**: `demo/specs-invalid/proto/buf.yaml`, `buf.gen.yaml`, `broken.proto`, `demo/specs-invalid/openapi/logistics.yaml`
+- **Learnings**: Container exit codes propagate correctly (100 for protoc, 1 for openapi-generator). Error messages are actionable — proto shows file:line:col, OpenAPI shows missing field name. `generated/` remains empty on failure. Pipeline recovers cleanly after invalid run.
+- **Patterns**: Minimal invalid fixtures: one proto with missing semicolon, one OpenAPI without `paths` key.
+
+## [2026-04-13] — [T12] README, run-all.sh, volume swap test
+- **Status**: ✅ Done
+- **Files changed**: `demo/README.md`, `demo/scripts/run-all.sh`, `demo/specs-alt/` (product.proto, logistics.yaml, buf configs)
+- **Learnings**: Volume swap works seamlessly — `SPECS_DIR=./specs-alt docker compose up` generates `catalog.v1.Product` instead of `logistics.v1.Order` with zero config changes. Swap Without Change principle validated.
+- **Patterns**: Alternative spec sets should include their own `buf.yaml` + `buf.gen.yaml` alongside .proto files.

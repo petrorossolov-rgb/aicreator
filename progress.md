@@ -13,6 +13,9 @@
 - **Go enum collision**: openapi-generator go-server creates flat package-level enum constants. Enum values must be globally unique within the package — use type-prefixed names (ORDER_*, SHIPMENT_*) in OpenAPI specs.
 - **ktlint generated code**: Protobuf Kotlin DSL uses non-standard function names. Inject `.editorconfig` with `ktlint_standard_function-naming = disabled` before running ktlint on generated code.
 - **ruff generated code**: openapi-generator Python output needs `--unsafe-fixes --ignore=E501,E721` to handle unfixable patterns in generated code.
+- **ktlint max-line-length**: Protobuf Kotlin DSL extensions can produce lines >140 chars. Disable `ktlint_standard_max-line-length` in `.editorconfig` alongside `function-naming`.
+- **Docker Compose one-shot chaining**: Use `depends_on: { service: { condition: service_completed_successfully } }` to chain generate → format → validate in Compose v2.
+- **Volume swap specs**: Alternative spec directories must include their own `buf.yaml` + `buf.gen.yaml` alongside proto files. OpenAPI spec must be named `logistics.yaml` to match config paths.
 
 ## Docs Debt
 <!-- Items logged by /execute, /change, /incident. Resolved by /sync-docs. -->

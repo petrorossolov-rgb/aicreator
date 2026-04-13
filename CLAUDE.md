@@ -44,4 +44,4 @@ docker compose up f1-kotlin format-kotlin      # Single function
 
 | ID | Name | Status |
 |----|------|--------|
-| ep01-demo | Demo: deterministic code generation (F1, F2, F4) | 🔄 Active |
+| ep01-demo | Demo: deterministic code generation (F1, F2, F4) | ✅ Done |

@@ -393,11 +393,11 @@ Any delay in specs (T02, T03), Dockerfiles (T05, T06), or post-processing (T08, 
 - [x] T10: Python post-processing: format + validate scripts + test
 
 ### Wave 4
-- [ ] T11: Docker Compose: full pipeline integration
-- [ ] T11a: Negative test: pipeline on invalid input
+- [x] T11: Docker Compose: full pipeline integration
+- [x] T11a: Negative test: pipeline on invalid input
 
 ### Wave 5
-- [ ] T12: README, run-all.sh, volume swap test
+- [x] T12: README, run-all.sh, volume swap test
 
 ---
 
