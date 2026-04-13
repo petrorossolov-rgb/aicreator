@@ -376,10 +376,10 @@ Any delay in specs (T02, T03), Dockerfiles (T05, T06), or post-processing (T08, 
 ## Progress Tracker
 
 ### Wave 1
-- [ ] T01: Project skeleton: directories, .env, .gitignore
-- [ ] T02: Synthetic Proto specifications
-- [ ] T03: Synthetic OpenAPI specification
-- [ ] T04: openapi-generator configs + mustache templates
+- [x] T01: Project skeleton: directories, .env, .gitignore
+- [x] T02: Synthetic Proto specifications
+- [x] T03: Synthetic OpenAPI specification
+- [x] T04: openapi-generator configs + mustache templates
 
 ### Wave 2
 - [ ] T05: F1 Kotlin: Dockerfile + generation script + test
