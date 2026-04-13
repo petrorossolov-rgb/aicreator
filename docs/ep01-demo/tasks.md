@@ -388,9 +388,9 @@ Any delay in specs (T02, T03), Dockerfiles (T05, T06), or post-processing (T08, 
 - [x] T07: F4 Python: Dockerfile + generation script + test
 
 ### Wave 3
-- [ ] T08: Kotlin post-processing: format + validate scripts + test
-- [ ] T09: Go post-processing: format + validate scripts + test
-- [ ] T10: Python post-processing: format + validate scripts + test
+- [x] T08: Kotlin post-processing: format + validate scripts + test
+- [x] T09: Go post-processing: format + validate scripts + test
+- [x] T10: Python post-processing: format + validate scripts + test
 
 ### Wave 4
 - [ ] T11: Docker Compose: full pipeline integration

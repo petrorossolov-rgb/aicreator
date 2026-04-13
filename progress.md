@@ -10,6 +10,9 @@
 - **buf local plugins**: Use `protoc_builtin: java` + `protoc_builtin: kotlin` in buf.gen.yaml instead of `remote:` BSR plugins (BSR requires auth, returns 403). Requires protoc installed in Docker image.
 - **MSYS_NO_PATHCONV**: On Windows Git Bash, use `MSYS_NO_PATHCONV=1` before docker run to prevent path conversion of container paths (e.g., `/scripts/...` → `C:/Program Files/Git/scripts/...`)
 - **openapi-generator shared JAR**: Both Go and Python Dockerfiles download the same openapi-generator-cli v7.12.0 JAR. Keep version synchronized across images.
+- **Go enum collision**: openapi-generator go-server creates flat package-level enum constants. Enum values must be globally unique within the package — use type-prefixed names (ORDER_*, SHIPMENT_*) in OpenAPI specs.
+- **ktlint generated code**: Protobuf Kotlin DSL uses non-standard function names. Inject `.editorconfig` with `ktlint_standard_function-naming = disabled` before running ktlint on generated code.
+- **ruff generated code**: openapi-generator Python output needs `--unsafe-fixes --ignore=E501,E721` to handle unfixable patterns in generated code.
 
 ## Docs Debt
 <!-- Items logged by /execute, /change, /incident. Resolved by /sync-docs. -->
