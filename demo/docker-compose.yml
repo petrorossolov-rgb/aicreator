@@ -1,0 +1,112 @@
+services:
+  # ── Generation (Wave 1 — run in parallel, no dependencies) ──────────
+
+  f1-kotlin:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.kotlin
+    volumes:
+      - ${SPECS_DIR:-./specs}:/specs:ro
+      - ./generated:/generated
+      - ./scripts:/scripts:ro
+    command: ["/scripts/generate-f1-kotlin.sh"]
+
+  f2-go:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.go
+    volumes:
+      - ${SPECS_DIR:-./specs}:/specs:ro
+      - ./generated:/generated
+      - ./scripts:/scripts:ro
+      - ./config:/config:ro
+      - ./templates:/templates:ro
+    command: ["/scripts/generate-f2-go.sh"]
+
+  f4-python:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.python
+    volumes:
+      - ${SPECS_DIR:-./specs}:/specs:ro
+      - ./generated:/generated
+      - ./scripts:/scripts:ro
+      - ./config:/config:ro
+      - ./templates:/templates:ro
+    command: ["/scripts/generate-f4-python.sh"]
+
+  # ── Formatting (Wave 2 — depends on generation) ────────────────────
+
+  format-kotlin:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.kotlin
+    volumes:
+      - ./generated:/generated
+      - ./scripts:/scripts:ro
+    command: ["/scripts/format-kotlin.sh"]
+    depends_on:
+      f1-kotlin:
+        condition: service_completed_successfully
+
+  format-go:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.go
+    volumes:
+      - ./generated:/generated
+      - ./scripts:/scripts:ro
+    command: ["/scripts/format-go.sh"]
+    depends_on:
+      f2-go:
+        condition: service_completed_successfully
+
+  format-python:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.python
+    volumes:
+      - ./generated:/generated
+      - ./scripts:/scripts:ro
+    command: ["/scripts/format-python.sh"]
+    depends_on:
+      f4-python:
+        condition: service_completed_successfully
+
+  # ── Validation (Wave 3 — depends on formatting) ────────────────────
+
+  validate-kotlin:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.kotlin
+    volumes:
+      - ./generated:/generated
+      - ./scripts:/scripts:ro
+    command: ["/scripts/validate-kotlin.sh"]
+    depends_on:
+      format-kotlin:
+        condition: service_completed_successfully
+
+  validate-go:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.go
+    volumes:
+      - ./generated:/generated
+      - ./scripts:/scripts:ro
+    command: ["/scripts/validate-go.sh"]
+    depends_on:
+      format-go:
+        condition: service_completed_successfully
+
+  validate-python:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.python
+    volumes:
+      - ./generated:/generated
+      - ./scripts:/scripts:ro
+    command: ["/scripts/validate-python.sh"]
+    depends_on:
+      format-python:
+        condition: service_completed_successfully

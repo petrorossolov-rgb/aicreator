@@ -19,6 +19,7 @@ root = true
 
 [*.kt]
 ktlint_standard_function-naming = disabled
+ktlint_standard_max-line-length = disabled
 EDITORCONFIG
 
 # Run ktlint in format mode (fix in-place)
