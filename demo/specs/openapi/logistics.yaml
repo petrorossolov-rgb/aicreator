@@ -310,12 +310,12 @@ components:
     OrderStatus:
       type: string
       enum:
-        - CREATED
-        - CONFIRMED
-        - PICKING
-        - SHIPPED
-        - DELIVERED
-        - CANCELLED
+        - ORDER_CREATED
+        - ORDER_CONFIRMED
+        - ORDER_PICKING
+        - ORDER_SHIPPED
+        - ORDER_DELIVERED
+        - ORDER_CANCELLED
 
     OrderItem:
       type: object
@@ -393,11 +393,11 @@ components:
     ShipmentStatus:
       type: string
       enum:
-        - PENDING
-        - IN_TRANSIT
-        - OUT_FOR_DELIVERY
-        - DELIVERED
-        - RETURNED
+        - SHIPMENT_PENDING
+        - SHIPMENT_IN_TRANSIT
+        - SHIPMENT_OUT_FOR_DELIVERY
+        - SHIPMENT_DELIVERED
+        - SHIPMENT_RETURNED
 
     ShipmentItem:
       type: object
