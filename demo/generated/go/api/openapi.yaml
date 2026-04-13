@@ -1,0 +1,1010 @@
+openapi: 3.0.3
+info:
+  contact:
+    email: aicreator@example.com
+    name: AICreator Demo
+  description: "REST API for logistics operations — orders, shipments, and warehouse\
+    \ inventory management."
+  title: Logistics API
+  version: 1.0.0
+servers:
+- description: Local development server
+  url: http://localhost:8080/api/v1
+paths:
+  /orders:
+    get:
+      operationId: listOrders
+      parameters:
+      - explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 20
+          maximum: 100
+          minimum: 1
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          minimum: 0
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderList'
+          description: List of orders
+      summary: List orders with pagination
+      tags:
+      - Orders
+    post:
+      operationId: createOrder
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderRequest'
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          description: Order created
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Invalid request
+      summary: Create a new order
+      tags:
+      - Orders
+  /orders/{orderId}:
+    delete:
+      operationId: deleteOrder
+      parameters:
+      - explode: false
+        in: path
+        name: orderId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "204":
+          description: Order deleted
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Order not found
+      summary: Delete an order
+      tags:
+      - Orders
+    get:
+      operationId: getOrder
+      parameters:
+      - explode: false
+        in: path
+        name: orderId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          description: Order found
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Order not found
+      summary: Get order by ID
+      tags:
+      - Orders
+    put:
+      operationId: updateOrder
+      parameters:
+      - explode: false
+        in: path
+        name: orderId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOrderRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          description: Order updated
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Order not found
+      summary: Update an existing order
+      tags:
+      - Orders
+  /shipments:
+    get:
+      operationId: listShipments
+      parameters:
+      - explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 20
+          maximum: 100
+          minimum: 1
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          minimum: 0
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShipmentList'
+          description: List of shipments
+      summary: List shipments with pagination
+      tags:
+      - Shipments
+  /shipments/{shipmentId}:
+    get:
+      operationId: getShipment
+      parameters:
+      - explode: false
+        in: path
+        name: shipmentId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shipment'
+          description: Shipment found
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Shipment not found
+      summary: Get shipment by ID
+      tags:
+      - Shipments
+  /shipments/{shipmentId}/track:
+    get:
+      operationId: trackShipment
+      parameters:
+      - explode: false
+        in: path
+        name: shipmentId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrackingHistory'
+          description: Tracking history
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Shipment not found
+      summary: Get tracking history for a shipment
+      tags:
+      - Shipments
+  /warehouses:
+    get:
+      operationId: listWarehouses
+      parameters:
+      - explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 20
+          maximum: 100
+          minimum: 1
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          minimum: 0
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WarehouseList'
+          description: List of warehouses
+      summary: List warehouses with pagination
+      tags:
+      - Warehouses
+  /warehouses/{warehouseId}:
+    get:
+      operationId: getWarehouse
+      parameters:
+      - explode: false
+        in: path
+        name: warehouseId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Warehouse'
+          description: Warehouse found
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Warehouse not found
+      summary: Get warehouse by ID
+      tags:
+      - Warehouses
+  /warehouses/{warehouseId}/inventory/{sku}:
+    patch:
+      operationId: updateInventory
+      parameters:
+      - explode: false
+        in: path
+        name: warehouseId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - explode: false
+        in: path
+        name: sku
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateInventoryRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryItem'
+          description: Inventory updated
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Warehouse or SKU not found
+      summary: Update inventory for a specific SKU in a warehouse
+      tags:
+      - Warehouses
+components:
+  parameters:
+    Limit:
+      explode: true
+      in: query
+      name: limit
+      required: false
+      schema:
+        default: 20
+        maximum: 100
+        minimum: 1
+        type: integer
+      style: form
+    Offset:
+      explode: true
+      in: query
+      name: offset
+      required: false
+      schema:
+        default: 0
+        minimum: 0
+        type: integer
+      style: form
+  schemas:
+    Address:
+      example:
+        country: country
+        city: city
+        street: street
+        postalCode: postalCode
+        region: region
+      properties:
+        street:
+          type: string
+        city:
+          type: string
+        region:
+          type: string
+        postalCode:
+          type: string
+        country:
+          type: string
+      required:
+      - city
+      - country
+      - street
+      type: object
+    Location:
+      example:
+        address:
+          country: country
+          city: city
+          street: street
+          postalCode: postalCode
+          region: region
+        latitude: 1.4658129805029452
+        name: name
+        longitude: 5.962133916683182
+        timestamp: 2000-01-23T04:56:07.000+00:00
+      properties:
+        name:
+          type: string
+        address:
+          $ref: '#/components/schemas/Address'
+        latitude:
+          format: double
+          type: number
+        longitude:
+          format: double
+          type: number
+        timestamp:
+          format: date-time
+          type: string
+      type: object
+    OrderStatus:
+      enum:
+      - ORDER_CREATED
+      - ORDER_CONFIRMED
+      - ORDER_PICKING
+      - ORDER_SHIPPED
+      - ORDER_DELIVERED
+      - ORDER_CANCELLED
+      type: string
+    OrderItem:
+      example:
+        quantity: 1
+        name: name
+        priceCents: 6
+        sku: sku
+      properties:
+        sku:
+          type: string
+        name:
+          type: string
+        quantity:
+          minimum: 1
+          type: integer
+        priceCents:
+          format: int64
+          type: integer
+      required:
+      - name
+      - priceCents
+      - quantity
+      - sku
+      type: object
+    Order:
+      example:
+        createdAt: 2000-01-23T04:56:07.000+00:00
+        orderId: orderId
+        customerId: customerId
+        shippingAddress:
+          country: country
+          city: city
+          street: street
+          postalCode: postalCode
+          region: region
+        items:
+        - quantity: 1
+          name: name
+          priceCents: 6
+          sku: sku
+        - quantity: 1
+          name: name
+          priceCents: 6
+          sku: sku
+        status: ORDER_CREATED
+        updatedAt: 2000-01-23T04:56:07.000+00:00
+      properties:
+        orderId:
+          type: string
+        customerId:
+          type: string
+        shippingAddress:
+          $ref: '#/components/schemas/Address'
+        items:
+          items:
+            $ref: '#/components/schemas/OrderItem'
+          type: array
+        status:
+          $ref: '#/components/schemas/OrderStatus'
+        createdAt:
+          format: date-time
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+      required:
+      - customerId
+      - items
+      - orderId
+      - shippingAddress
+      - status
+      type: object
+    OrderList:
+      example:
+        total: 1
+        items:
+        - createdAt: 2000-01-23T04:56:07.000+00:00
+          orderId: orderId
+          customerId: customerId
+          shippingAddress:
+            country: country
+            city: city
+            street: street
+            postalCode: postalCode
+            region: region
+          items:
+          - quantity: 1
+            name: name
+            priceCents: 6
+            sku: sku
+          - quantity: 1
+            name: name
+            priceCents: 6
+            sku: sku
+          status: ORDER_CREATED
+          updatedAt: 2000-01-23T04:56:07.000+00:00
+        - createdAt: 2000-01-23T04:56:07.000+00:00
+          orderId: orderId
+          customerId: customerId
+          shippingAddress:
+            country: country
+            city: city
+            street: street
+            postalCode: postalCode
+            region: region
+          items:
+          - quantity: 1
+            name: name
+            priceCents: 6
+            sku: sku
+          - quantity: 1
+            name: name
+            priceCents: 6
+            sku: sku
+          status: ORDER_CREATED
+          updatedAt: 2000-01-23T04:56:07.000+00:00
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/Order'
+          type: array
+        total:
+          type: integer
+      type: object
+    CreateOrderRequest:
+      example:
+        customerId: customerId
+        shippingAddress:
+          country: country
+          city: city
+          street: street
+          postalCode: postalCode
+          region: region
+        items:
+        - quantity: 1
+          name: name
+          priceCents: 6
+          sku: sku
+        - quantity: 1
+          name: name
+          priceCents: 6
+          sku: sku
+      properties:
+        customerId:
+          type: string
+        shippingAddress:
+          $ref: '#/components/schemas/Address'
+        items:
+          items:
+            $ref: '#/components/schemas/OrderItem'
+          type: array
+      required:
+      - customerId
+      - items
+      - shippingAddress
+      type: object
+    UpdateOrderRequest:
+      example:
+        shippingAddress:
+          country: country
+          city: city
+          street: street
+          postalCode: postalCode
+          region: region
+        items:
+        - quantity: 1
+          name: name
+          priceCents: 6
+          sku: sku
+        - quantity: 1
+          name: name
+          priceCents: 6
+          sku: sku
+        status: ORDER_CREATED
+      properties:
+        shippingAddress:
+          $ref: '#/components/schemas/Address'
+        items:
+          items:
+            $ref: '#/components/schemas/OrderItem'
+          type: array
+        status:
+          $ref: '#/components/schemas/OrderStatus'
+      type: object
+    ShipmentStatus:
+      enum:
+      - SHIPMENT_PENDING
+      - SHIPMENT_IN_TRANSIT
+      - SHIPMENT_OUT_FOR_DELIVERY
+      - SHIPMENT_DELIVERED
+      - SHIPMENT_RETURNED
+      type: string
+    ShipmentItem:
+      example:
+        quantity: 1
+        sku: sku
+        weightKg: 6.027456183070403
+      properties:
+        sku:
+          type: string
+        quantity:
+          minimum: 1
+          type: integer
+        weightKg:
+          format: double
+          type: number
+      required:
+      - quantity
+      - sku
+      type: object
+    Shipment:
+      example:
+        createdAt: 2000-01-23T04:56:07.000+00:00
+        orderId: orderId
+        warehouseId: warehouseId
+        shipmentId: shipmentId
+        origin:
+          country: country
+          city: city
+          street: street
+          postalCode: postalCode
+          region: region
+        destination:
+          country: country
+          city: city
+          street: street
+          postalCode: postalCode
+          region: region
+        trackingHistory:
+        - address:
+            country: country
+            city: city
+            street: street
+            postalCode: postalCode
+            region: region
+          latitude: 1.4658129805029452
+          name: name
+          longitude: 5.962133916683182
+          timestamp: 2000-01-23T04:56:07.000+00:00
+        - address:
+            country: country
+            city: city
+            street: street
+            postalCode: postalCode
+            region: region
+          latitude: 1.4658129805029452
+          name: name
+          longitude: 5.962133916683182
+          timestamp: 2000-01-23T04:56:07.000+00:00
+        items:
+        - quantity: 1
+          sku: sku
+          weightKg: 6.027456183070403
+        - quantity: 1
+          sku: sku
+          weightKg: 6.027456183070403
+        status: SHIPMENT_PENDING
+        updatedAt: 2000-01-23T04:56:07.000+00:00
+      properties:
+        shipmentId:
+          type: string
+        orderId:
+          type: string
+        warehouseId:
+          type: string
+        origin:
+          $ref: '#/components/schemas/Address'
+        destination:
+          $ref: '#/components/schemas/Address'
+        items:
+          items:
+            $ref: '#/components/schemas/ShipmentItem'
+          type: array
+        status:
+          $ref: '#/components/schemas/ShipmentStatus'
+        trackingHistory:
+          items:
+            $ref: '#/components/schemas/Location'
+          type: array
+        createdAt:
+          format: date-time
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+      required:
+      - destination
+      - items
+      - orderId
+      - origin
+      - shipmentId
+      - status
+      - warehouseId
+      type: object
+    ShipmentList:
+      example:
+        total: 5
+        items:
+        - createdAt: 2000-01-23T04:56:07.000+00:00
+          orderId: orderId
+          warehouseId: warehouseId
+          shipmentId: shipmentId
+          origin:
+            country: country
+            city: city
+            street: street
+            postalCode: postalCode
+            region: region
+          destination:
+            country: country
+            city: city
+            street: street
+            postalCode: postalCode
+            region: region
+          trackingHistory:
+          - address:
+              country: country
+              city: city
+              street: street
+              postalCode: postalCode
+              region: region
+            latitude: 1.4658129805029452
+            name: name
+            longitude: 5.962133916683182
+            timestamp: 2000-01-23T04:56:07.000+00:00
+          - address:
+              country: country
+              city: city
+              street: street
+              postalCode: postalCode
+              region: region
+            latitude: 1.4658129805029452
+            name: name
+            longitude: 5.962133916683182
+            timestamp: 2000-01-23T04:56:07.000+00:00
+          items:
+          - quantity: 1
+            sku: sku
+            weightKg: 6.027456183070403
+          - quantity: 1
+            sku: sku
+            weightKg: 6.027456183070403
+          status: SHIPMENT_PENDING
+          updatedAt: 2000-01-23T04:56:07.000+00:00
+        - createdAt: 2000-01-23T04:56:07.000+00:00
+          orderId: orderId
+          warehouseId: warehouseId
+          shipmentId: shipmentId
+          origin:
+            country: country
+            city: city
+            street: street
+            postalCode: postalCode
+            region: region
+          destination:
+            country: country
+            city: city
+            street: street
+            postalCode: postalCode
+            region: region
+          trackingHistory:
+          - address:
+              country: country
+              city: city
+              street: street
+              postalCode: postalCode
+              region: region
+            latitude: 1.4658129805029452
+            name: name
+            longitude: 5.962133916683182
+            timestamp: 2000-01-23T04:56:07.000+00:00
+          - address:
+              country: country
+              city: city
+              street: street
+              postalCode: postalCode
+              region: region
+            latitude: 1.4658129805029452
+            name: name
+            longitude: 5.962133916683182
+            timestamp: 2000-01-23T04:56:07.000+00:00
+          items:
+          - quantity: 1
+            sku: sku
+            weightKg: 6.027456183070403
+          - quantity: 1
+            sku: sku
+            weightKg: 6.027456183070403
+          status: SHIPMENT_PENDING
+          updatedAt: 2000-01-23T04:56:07.000+00:00
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/Shipment'
+          type: array
+        total:
+          type: integer
+      type: object
+    TrackingHistory:
+      example:
+        shipmentId: shipmentId
+        locations:
+        - address:
+            country: country
+            city: city
+            street: street
+            postalCode: postalCode
+            region: region
+          latitude: 1.4658129805029452
+          name: name
+          longitude: 5.962133916683182
+          timestamp: 2000-01-23T04:56:07.000+00:00
+        - address:
+            country: country
+            city: city
+            street: street
+            postalCode: postalCode
+            region: region
+          latitude: 1.4658129805029452
+          name: name
+          longitude: 5.962133916683182
+          timestamp: 2000-01-23T04:56:07.000+00:00
+      properties:
+        shipmentId:
+          type: string
+        locations:
+          items:
+            $ref: '#/components/schemas/Location'
+          type: array
+      type: object
+    Warehouse:
+      example:
+        createdAt: 2000-01-23T04:56:07.000+00:00
+        address:
+          country: country
+          city: city
+          street: street
+          postalCode: postalCode
+          region: region
+        warehouseId: warehouseId
+        latitude: 0.8008281904610115
+        name: name
+        inventory:
+        - reorderPoint: 5
+          quantityOnHand: 1
+          quantityReserved: 5
+          name: name
+          sku: sku
+        - reorderPoint: 5
+          quantityOnHand: 1
+          quantityReserved: 5
+          name: name
+          sku: sku
+        longitude: 6.027456183070403
+        updatedAt: 2000-01-23T04:56:07.000+00:00
+      properties:
+        warehouseId:
+          type: string
+        name:
+          type: string
+        address:
+          $ref: '#/components/schemas/Address'
+        latitude:
+          format: double
+          type: number
+        longitude:
+          format: double
+          type: number
+        inventory:
+          items:
+            $ref: '#/components/schemas/InventoryItem'
+          type: array
+        createdAt:
+          format: date-time
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+      required:
+      - address
+      - name
+      - warehouseId
+      type: object
+    WarehouseList:
+      example:
+        total: 2
+        items:
+        - createdAt: 2000-01-23T04:56:07.000+00:00
+          address:
+            country: country
+            city: city
+            street: street
+            postalCode: postalCode
+            region: region
+          warehouseId: warehouseId
+          latitude: 0.8008281904610115
+          name: name
+          inventory:
+          - reorderPoint: 5
+            quantityOnHand: 1
+            quantityReserved: 5
+            name: name
+            sku: sku
+          - reorderPoint: 5
+            quantityOnHand: 1
+            quantityReserved: 5
+            name: name
+            sku: sku
+          longitude: 6.027456183070403
+          updatedAt: 2000-01-23T04:56:07.000+00:00
+        - createdAt: 2000-01-23T04:56:07.000+00:00
+          address:
+            country: country
+            city: city
+            street: street
+            postalCode: postalCode
+            region: region
+          warehouseId: warehouseId
+          latitude: 0.8008281904610115
+          name: name
+          inventory:
+          - reorderPoint: 5
+            quantityOnHand: 1
+            quantityReserved: 5
+            name: name
+            sku: sku
+          - reorderPoint: 5
+            quantityOnHand: 1
+            quantityReserved: 5
+            name: name
+            sku: sku
+          longitude: 6.027456183070403
+          updatedAt: 2000-01-23T04:56:07.000+00:00
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/Warehouse'
+          type: array
+        total:
+          type: integer
+      type: object
+    InventoryItem:
+      example:
+        reorderPoint: 5
+        quantityOnHand: 1
+        quantityReserved: 5
+        name: name
+        sku: sku
+      properties:
+        sku:
+          type: string
+        name:
+          type: string
+        quantityOnHand:
+          type: integer
+        quantityReserved:
+          type: integer
+        reorderPoint:
+          type: integer
+      required:
+      - name
+      - quantityOnHand
+      - sku
+      type: object
+    UpdateInventoryRequest:
+      example:
+        reorderPoint: 1
+        quantityOnHand: 0
+        quantityReserved: 6
+      properties:
+        quantityOnHand:
+          type: integer
+        quantityReserved:
+          type: integer
+        reorderPoint:
+          type: integer
+      type: object
+    Error:
+      example:
+        code: code
+        message: message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+      required:
+      - code
+      - message
+      type: object
