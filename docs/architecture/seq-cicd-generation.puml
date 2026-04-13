@@ -1,0 +1,152 @@
+@startuml seq-cicd-generation
+title Автогенерация Python-клиента при изменении OpenAPI-спецификации в CI/CD
+
+autonumber
+
+actor "Разработчик" as Dev
+participant "Corporate Git" as Git
+participant "CI/CD Pipeline\n(GitLab CI / Jenkins)" as CICD
+participant "Core API" as API
+participant "Audit Logger" as Audit
+participant "Orchestrator" as Orch
+participant "Deterministic Generator\n(openapi-generator)" as OAGen
+participant "Post-processor\n(black + ruff)" as Ruff
+participant "Feature Branch" as Branch
+
+== Инициация изменений ==
+
+Dev -> Git : git push origin feat/update-order-api\n(содержит изменённый openapi.yaml)
+
+Git -> CICD : Webhook: push event\n{ branch, changed_files: ["openapi.yaml"] }
+
+note over CICD
+  Pipeline обнаруживает изменения в openapi.yaml
+  и запускает шаг кодогенерации
+end note
+
+CICD -> CICD : Определение изменённых спецификаций\n(git diff HEAD~1 -- "*.yaml")
+
+alt Спецификация openapi.yaml не изменялась
+    CICD --> CICD : Шаг генерации пропущен (skip)
+    note right of CICD
+      Оптимизация: генерация запускается
+      только при реальных изменениях spec
+    end note
+end
+
+== Вызов Core API из пайплайна ==
+
+CICD -> API : POST /api/generate\n{ source: "openapi",\n  target: "python",\n  spec_url: "git+ssh://git.corp/repo/openapi.yaml",\n  api_key: $AICREATOR_API_KEY }
+note right of CICD
+  API key хранится как protected secret
+  переменная в настройках CI/CD проекта
+end note
+
+== Аутентификация ==
+
+API -> API : Валидация API key\n(проверка scope: cicd_generate)
+
+alt Неверный или отозванный API key
+    API --> CICD : 401 Unauthorized\n{ error: "invalid_api_key" }
+    CICD --> CICD : Pipeline FAILED\nВывод ошибки в лог
+    CICD --> Dev : Уведомление о провале пайплайна\n(email / Mattermost)
+    note right of CICD
+      Pipeline завершается с ненулевым кодом.
+      Генерация кода не выполняется.
+    end note
+end
+
+== Аудит ==
+
+API -> Audit : Запись audit-события\n{ caller: "cicd", action: generate,\n  source: openapi, target: python,\n  pipeline_id, commit_sha, timestamp }
+activate Audit
+Audit --> API : OK
+deactivate Audit
+
+== Оркестрация и генерация ==
+
+API -> Orch : Запрос на генерацию\n{ spec, source_type: openapi, target: python }
+
+Orch -> Git : Получить стандарты\nдля Python / openapi-generator
+activate Git
+Git --> Orch : python-client-standards.yaml,\nopenapi-generator-config.yaml
+deactivate Git
+
+note over Orch
+  Источник — OpenAPI (структурированная схема).
+  Оркестратор выбирает детерминированный
+  путь генерации: openapi-generator.
+end note
+
+Orch -> OAGen : openapi-generator-cli generate\n  -i openapi.yaml\n  -g python\n  -c openapi-generator-config.yaml\n  --package-name order_client
+activate OAGen
+
+OAGen -> OAGen : Валидация OpenAPI spec
+alt Невалидная OpenAPI спецификация
+    OAGen --> Orch : ValidationError\n{ errors: ["missing required field 'info'", ...] }
+    Orch --> API : GenerationFailed { validation_errors }
+    API -> Audit : Запись audit-события\n{ action: generate_failed, reason: invalid_spec }
+    API --> CICD : 422 Unprocessable Entity\n{ error: "invalid_openapi_spec",\n  details: [...] }
+    CICD --> CICD : Pipeline FAILED\nВывод деталей ошибки в лог
+    CICD --> Dev : Уведомление: OpenAPI spec невалидна
+end
+
+OAGen -> OAGen : Генерация Python-клиента:\n  - models/ (Pydantic schemas)\n  - api/ (typed API methods)\n  - __init__.py, setup.py
+OAGen --> Orch : Сгенерированный Python код
+deactivate OAGen
+
+== Постобработка ==
+
+Orch -> Ruff : Форматирование и валидация\nPython кода
+activate Ruff
+Ruff -> Ruff : black . (форматирование PEP 8)
+Ruff -> Ruff : ruff check . (линтинг)
+
+alt Линтинг выявил ошибки
+    Ruff --> Orch : LintFailed\n{ errors: ["E501 line too long", ...] }
+    Orch --> API : PostProcessFailed { lint_errors }
+    API --> CICD : 422 Unprocessable Entity\n{ error: "lint_failed", details }
+    CICD --> CICD : Pipeline FAILED\nВывод ошибок линтинга в лог
+    CICD --> Dev : Уведомление: сгенерированный код\nне прошёл проверку ruff
+end
+
+opt Некритические предупреждения ruff
+    note over Ruff
+      W-level warnings не блокируют пайплайн,
+      выводятся в лог как INFO
+    end note
+end
+
+Ruff --> Orch : Отформатированный и валидный Python код
+deactivate Ruff
+
+== Возврат результата в пайплайн ==
+
+Orch --> API : GenerationResult\n{ files: [{name, content}], warnings: [] }
+API -> Audit : Запись audit-события\n{ action: generate_success,\n  files_count, pipeline_id }
+API --> CICD : 200 OK\n{ files: [{name, content}],\n  warnings: [],\n  generation_id: "gen-9d1e4f2a" }
+
+== Коммит результата в Git ==
+
+CICD -> CICD : Запись файлов в ./generated/python-client/
+CICD -> Git : git checkout -b generated/order-client-<commit_sha>
+activate Branch
+CICD -> Git : git add generated/python-client/
+CICD -> Git : git commit -m\n"chore: regenerate order Python client\n\n[aicreator] generation-id: gen-9d1e4f2a\nsource: openapi.yaml @ <commit_sha>"
+CICD -> Git : git push origin generated/order-client-<commit_sha>
+
+note over CICD
+  Сгенерированный код коммитится в отдельную
+  feature branch, а не напрямую в основную ветку.
+  Это позволяет провести code review перед мержем.
+end note
+
+== Создание Merge Request ==
+
+CICD -> Git : Создание Merge Request:\n  source: generated/order-client-<commit_sha>\n  target: feat/update-order-api\n  title: "chore: update generated Python client"\n  assignee: <author_of_openapi_change>
+Git --> CICD : { mr_url: "https://git.corp/repo/-/merge_requests/742" }
+deactivate Branch
+
+CICD --> Dev : Pipeline SUCCESS\nMR создан: https://git.corp/.../merge_requests/742
+
+@enduml

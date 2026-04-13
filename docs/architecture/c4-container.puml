@@ -1,0 +1,99 @@
+@startuml c4-container
+
+!include <C4/C4_Container>
+
+LAYOUT_WITH_LEGEND()
+
+title AICreator — C4 Container Diagram
+
+' ─────────────────────────────────────────
+' Пользователи
+' ─────────────────────────────────────────
+Person(developer, "Разработчик", "Использует CLI для генерации кода из командной строки")
+Person(analyst, "Аналитик / Тимлид", "Использует Web UI для управления генерацией и просмотра истории")
+
+' ─────────────────────────────────────────
+' Внешние системы
+' ─────────────────────────────────────────
+System_Ext(corp_git, "Corporate Git", "Хранилище спецификаций, шаблонов и сгенерированного кода (GitLab / Bitbucket)")
+System_Ext(ai_api, "Internal AI API", "LLM-сервис на базе Qwen 3 235B / GLM 4.7 — OpenAI-совместимый API")
+System_Ext(corp_sso, "Corporate SSO", "Корпоративная аутентификация (OAuth 2.0 / OIDC)")
+System_Ext(logging_sys, "Internal Logging System", "Централизованная система аудит-логов (Splunk / ELK)")
+System_Ext(redis_svc, "Redis as a Service", "Управляемый Redis — брокер очереди задач")
+System_Ext(pg_svc, "PostgreSQL as a Service", "Управляемый PostgreSQL")
+
+' ─────────────────────────────────────────
+' Граница системы AICreator
+' ─────────────────────────────────────────
+System_Boundary(aicreator, "AICreator Platform") {
+
+    Container(cli, "CLI", "Python / Typer", "Интерфейс командной строки: запуск генерации, просмотр статуса задач")
+
+    Container(web_ui, "Web UI", "React, Ant Design / MUI", "Браузерный интерфейс: управление задачами, история генераций, конфигурация проектов")
+
+    Container(core_api, "Core API", "Python / FastAPI", "Центральный REST API: все функции генерации, аутентификация (SSO), аудит-логирование")
+
+    Container(orchestrator, "Orchestrator Engine", "Python", "Маршрутизация запросов к генераторам, загрузка конфигов и стандартов, управление шаблонами (Jinja2)")
+
+    Container(det_generators, "Deterministic Generators", "buf, openapi-generator, asyncapi-generator", "Детерминированная кодогенерация по спецификациям: Protobuf, OpenAPI, AsyncAPI")
+
+    Container(ai_generator, "AI Generator", "Python / litellm", "Отправка PUML-диаграмм в LLM, управление промптами и few-shot примерами")
+
+    Container(postprocessor, "Post-processor", "Python", "Форматирование кода (black, gofmt, ktlint) и валидация через линтеры")
+
+    Container(task_queue, "Task Queue", "Celery + Redis", "Асинхронное выполнение задач генерации, инициированных из Web UI")
+
+    ContainerDb(database, "Database", "PostgreSQL", "История генераций, пользовательские конфигурации, метаданные аудита")
+}
+
+' ─────────────────────────────────────────
+' Связи: пользователи → контейнеры
+' ─────────────────────────────────────────
+Rel(developer, cli, "Запускает генерацию", "CLI / subprocess")
+Rel(analyst, web_ui, "Управляет задачами и конфигурацией", "HTTPS")
+
+' ─────────────────────────────────────────
+' Связи: UI / CLI → Core API
+' ─────────────────────────────────────────
+Rel(cli, core_api, "Отправляет запросы на генерацию", "REST / HTTPS")
+Rel(web_ui, core_api, "Отправляет запросы, получает статусы", "REST / HTTPS")
+
+' ─────────────────────────────────────────
+' Связи: Core API → внутренние сервисы
+' ─────────────────────────────────────────
+Rel(core_api, corp_sso, "Валидирует токены пользователей", "OAuth 2.0 / OIDC")
+Rel(core_api, logging_sys, "Отправляет аудит-события", "HTTP / Syslog")
+Rel(core_api, orchestrator, "Передаёт задачу на генерацию", "Internal call")
+Rel(core_api, task_queue, "Ставит асинхронные задачи в очередь", "Celery / Redis")
+Rel(core_api, database, "Читает и записывает историю, конфиги", "SQL / asyncpg")
+
+' ─────────────────────────────────────────
+' Связи: Task Queue → Orchestrator
+' ─────────────────────────────────────────
+Rel(task_queue, orchestrator, "Запускает воркеры генерации", "Celery worker")
+Rel(task_queue, redis_svc, "Использует как брокер и результирующий бэкенд", "Redis protocol")
+
+' ─────────────────────────────────────────
+' Связи: Orchestrator → генераторы
+' ─────────────────────────────────────────
+Rel(orchestrator, corp_git, "Читает спецификации и шаблоны; коммитит результат", "Git / SSH или HTTPS")
+Rel(orchestrator, det_generators, "Запускает детерминированную генерацию", "subprocess")
+Rel(orchestrator, ai_generator, "Запускает AI-генерацию по PUML", "Internal call")
+
+' ─────────────────────────────────────────
+' Связи: генераторы → постпроцессор
+' ─────────────────────────────────────────
+Rel(det_generators, postprocessor, "Передаёт сырой код на форматирование", "Internal call")
+Rel(ai_generator, postprocessor, "Передаёт сгенерированный код на форматирование", "Internal call")
+
+' ─────────────────────────────────────────
+' Связи: AI Generator → внешний LLM
+' ─────────────────────────────────────────
+Rel(ai_generator, ai_api, "Отправляет промпты, получает сгенерированный код", "OpenAI-compatible REST API / HTTPS")
+
+' ─────────────────────────────────────────
+' Связи: БД → внешний PostgreSQL
+' ─────────────────────────────────────────
+Rel(database, pg_svc, "Хранит данные во внешнем управляемом PostgreSQL", "PostgreSQL protocol")
+
+@enduml

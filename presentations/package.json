@@ -1,0 +1,16 @@
+{
+  "name": "project-presentations",
+  "private": true,
+  "scripts": {
+    "dev": "slidev",
+    "build": "slidev build",
+    "export": "slidev export"
+  },
+  "dependencies": {
+    "@oxc-parser/binding-win32-x64-msvc": "^0.124.0",
+    "@slidev/cli": "^51.0.0",
+    "@slidev/theme-default": "latest",
+    "@slidev/theme-seriph": "latest",
+    "playwright-chromium": "latest"
+  }
+}

@@ -1,0 +1,46 @@
+@startuml C4_Context_AICreator
+!include <C4/C4_Context>
+
+title Контекстная диаграмма (C4 Level 1) — Платформа AICreator
+
+LAYOUT_WITH_LEGEND()
+
+' ─── Пользователи ───────────────────────────────────────────────────────────
+
+Person(analyst, "Системный аналитик", "Разрабатывает спецификации (PUML, OpenAPI, Proto).\nИспользует Web UI для управления генерацией.")
+
+Person(developer, "Разработчик", "Запускает кодогенерацию локально.\nИспользует CLI-интерфейс платформы.")
+
+Person(cicd, "CI/CD Pipeline", "Автоматизированная система сборки.\nЗапускает генерацию в рамках пайплайна.")
+
+' ─── Основная система ────────────────────────────────────────────────────────
+
+System(aicreator, "AICreator", "Гибридная платформа AI-кодогенерации.\nПоддерживает генерацию по Proto, OpenAPI, AsyncAPI и PUML-диаграммам.\nИнтерфейсы: Web UI, CLI, CI/CD plugin.")
+
+' ─── Внешние системы ────────────────────────────────────────────────────────
+
+System_Ext(git, "Corporate Git", "Корпоративный репозиторий.\nХранит спецификации, шаблоны и результаты генерации.")
+
+System_Ext(ai_api, "Internal AI API", "Внутренний OpenAI-совместимый API.\nМодели: Qwen 3 235B / GLM 4.7.\nИспользуется для генерации сервисных скелетонов по PUML.")
+
+System_Ext(sso, "Corporate SSO", "Корпоративная служба аутентификации.\nОбеспечивает единый вход (SSO) для Web UI и CLI.")
+
+System_Ext(logging, "Internal Logging System", "Внутренняя система логирования.\nПолучает аудит-события о запусках генерации и их результатах.")
+
+System_Ext(cloud, "Corporate Cloud Platform", "Корпоративная облачная платформа.\nПредоставляет управляемые сервисы: PostgreSQL, Redis, Kafka.")
+
+' ─── Связи: пользователи → AICreator ────────────────────────────────────────
+
+Rel(analyst, aicreator, "Управляет генерацией", "HTTPS / Web UI")
+Rel(developer, aicreator, "Запускает генерацию", "CLI")
+Rel(cicd, aicreator, "Инициирует автоматическую генерацию", "REST API / Plugin")
+
+' ─── Связи: AICreator → внешние системы ─────────────────────────────────────
+
+Rel(aicreator, git, "Читает спецификации и шаблоны;\nпушит сгенерированный код", "SSH / HTTPS")
+Rel(aicreator, ai_api, "Отправляет PUML-диаграммы;\nполучает сгенерированный код сервисов", "HTTPS / OpenAI Chat Completions API")
+Rel(aicreator, sso, "Аутентификация пользователей", "OIDC / OAuth 2.0")
+Rel(aicreator, logging, "Отправляет аудит-события генерации", "HTTP / gRPC")
+Rel(aicreator, cloud, "Использует PostgreSQL (состояние),\nRedis (кэш), Kafka (очереди задач)", "TCP")
+
+@enduml

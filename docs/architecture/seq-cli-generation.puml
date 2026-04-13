@@ -1,0 +1,117 @@
+@startuml seq-cli-generation
+title Генерация Kotlin data classes из Proto-спецификации через CLI
+
+autonumber
+
+actor "Разработчик" as Dev
+participant "AICreator CLI" as CLI
+participant "Core API" as API
+participant "Audit Logger" as Audit
+participant "Orchestrator" as Orch
+participant "Template Repo\n(Corporate Git)" as Repo
+participant "Deterministic Generator\n(buf)" as Buf
+participant "Post-processor\n(ktlint)" as Ktlint
+
+== Инициация запроса ==
+
+Dev -> CLI : aicreator generate\n--from proto\n--to kotlin\n--spec order.proto
+note right of Dev
+  Разработчик запускает генерацию
+  локально из корня проекта
+end note
+
+CLI -> CLI : Чтение API key из ~/.aicreator/config
+CLI -> API : POST /api/generate\n{ source: "proto", target: "kotlin",\n  spec_content: <order.proto>, api_key }
+
+== Аутентификация ==
+
+API -> API : Валидация API key
+alt Неверный API key
+    API --> CLI : 401 Unauthorized
+    CLI --> Dev : Ошибка: недействительный API key.\nПроверьте ~/.aicreator/config
+    note right of CLI
+      Генерация прервана.
+      Дальнейшие шаги не выполняются.
+    end note
+end
+
+== Аудит и оркестрация ==
+
+API -> Audit : Запись audit-события\n{ user, action: generate,\n  source: proto, target: kotlin,\n  timestamp }
+activate Audit
+Audit --> API : OK
+deactivate Audit
+
+API -> Orch : Запрос на генерацию\n{ spec, source_type, target_lang }
+
+== Загрузка конфигурации и стандартов ==
+
+Orch -> Repo : Получить шаблоны и стандарты\nдля Kotlin / proto
+activate Repo
+Repo --> Orch : kotlin-standards.yaml,\nbuf-config.yaml,\nкорпоративные naming conventions
+deactivate Repo
+
+note over Orch
+  Оркестратор анализирует тип источника (proto)
+  и целевой язык (kotlin) → выбирает
+  детерминированный путь генерации (buf)
+end note
+
+Orch -> Buf : Вызов buf generate\n{ spec: order.proto,\n  config: buf-config.yaml,\n  template: kotlin-data-classes }
+activate Buf
+
+== Детерминированная генерация ==
+
+Buf -> Buf : Парсинг .proto файла
+Buf -> Buf : Применение buf template:\nгенерация Kotlin data classes
+
+alt Ошибка парсинга .proto
+    Buf --> Orch : GenerationError\n{ message: "invalid proto syntax", line }
+    Orch --> API : GenerationFailed { details }
+    API --> CLI : 422 Unprocessable Entity\n{ error, details }
+    CLI --> Dev : Ошибка генерации: невалидный .proto файл.\n[строка ошибки]
+end
+
+Buf --> Orch : Сгенерированный Kotlin код
+deactivate Buf
+
+== Постобработка ==
+
+Orch -> Ktlint : Форматирование и валидация\nKotlin кода
+activate Ktlint
+Ktlint -> Ktlint : Форматирование (ktlint --format)
+Ktlint -> Ktlint : Линтинг (ktlint --lint)
+
+alt Критические ошибки линтинга
+    Ktlint --> Orch : LintFailed { violations }
+    Orch --> API : PostProcessFailed { violations }
+    API --> CLI : 422 Unprocessable Entity\n{ lint_errors }
+    CLI --> Dev : Ошибка: сгенерированный код не прошёл ktlint.\n[список нарушений]
+end
+
+opt Некритические предупреждения
+    note over Ktlint
+      Предупреждения добавляются к результату,
+      генерация продолжается
+    end note
+end
+
+Ktlint --> Orch : Отформатированный и валидный Kotlin код
+deactivate Ktlint
+
+== Возврат результата ==
+
+Orch --> API : GenerationResult\n{ files: [OrderOuterClass.kt, ...],\n  warnings: [] }
+API -> Audit : Запись audit-события\n{ action: generate_success, files_count }
+API --> CLI : 200 OK\n{ files: [{name, content}], warnings }
+
+== Запись файлов в проект ==
+
+CLI -> CLI : Запись файлов в ./generated/kotlin/
+note right of CLI
+  Файлы записываются относительно
+  текущей директории проекта
+end note
+CLI --> Dev : Генерация завершена.\nФайлы записаны в ./generated/kotlin/:\n  - OrderOuterClass.kt\n  - OrderServiceGrpc.kt
+
+@enduml

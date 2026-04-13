@@ -1,0 +1,375 @@
+/*
+ * Consulting-grade Slidev theme
+ * Inspired by PwC / McKinsey / BCG presentation standards
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;700&display=swap');
+
+:root {
+  /* Primary palette */
+  --c-brand: #E85D26;
+  --c-brand-light: #FF7A45;
+  --c-brand-dark: #C44A1C;
+
+  /* Neutrals */
+  --c-dark: #1A1A2E;
+  --c-dark-soft: #232340;
+  --c-dark-mute: #2D2D4A;
+  --c-text-primary: #EAEAF0;
+  --c-text-secondary: #9B9BB4;
+  --c-text-muted: #6B6B82;
+  --c-border: rgba(255, 255, 255, 0.08);
+
+  /* Accent colors */
+  --c-accent-blue: #4A90D9;
+  --c-accent-green: #34C77B;
+  --c-accent-amber: #F5A623;
+  --c-accent-red: #E74C5E;
+  --c-accent-purple: #8B5CF6;
+
+  /* Semantic */
+  --c-positive: var(--c-accent-green);
+  --c-negative: var(--c-accent-red);
+  --c-warning: var(--c-accent-amber);
+  --c-info: var(--c-accent-blue);
+
+  /* Typography */
+  --font-heading: 'DM Sans', 'Inter', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Spacing scale */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 40px;
+  --space-2xl: 64px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.5);
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+}
+
+/* ===== Global typography ===== */
+
+.slidev-layout {
+  font-family: var(--font-body);
+  color: var(--c-text-primary);
+  background: var(--c-dark);
+}
+
+.slidev-layout h1 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 2.2em;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--c-text-primary);
+  margin-bottom: var(--space-lg);
+}
+
+.slidev-layout h2 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 1.5em;
+  letter-spacing: -0.01em;
+  color: var(--c-text-primary);
+  margin-bottom: var(--space-md);
+}
+
+.slidev-layout h3 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 1.15em;
+  color: var(--c-brand-light);
+  margin-bottom: var(--space-sm);
+}
+
+.slidev-layout p,
+.slidev-layout li {
+  font-size: 0.95em;
+  line-height: 1.7;
+  color: var(--c-text-secondary);
+}
+
+.slidev-layout strong {
+  color: var(--c-text-primary);
+  font-weight: 600;
+}
+
+/* ===== Lists ===== */
+
+.slidev-layout ul,
+.slidev-layout ul ul {
+  list-style: none !important;
+  padding-left: 0 !important;
+  margin-left: 0 !important;
+}
+
+.slidev-layout ul > li {
+  position: relative;
+  padding-left: 1.5em;
+  margin-bottom: 0.6em;
+  list-style-type: none !important;
+}
+
+.slidev-layout ul > li::marker {
+  content: none !important;
+  display: none !important;
+}
+
+.slidev-layout ul > li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--c-brand);
+}
+
+.slidev-layout ol {
+  padding-left: 1.5em;
+  counter-reset: item;
+  list-style: none;
+}
+
+.slidev-layout ol > li {
+  counter-increment: item;
+  position: relative;
+  padding-left: 0.5em;
+  margin-bottom: 0.6em;
+}
+
+.slidev-layout ol > li::before {
+  content: counter(item);
+  position: absolute;
+  left: -1.8em;
+  top: 0;
+  width: 1.4em;
+  height: 1.4em;
+  background: var(--c-brand);
+  color: white;
+  font-size: 0.75em;
+  font-weight: 700;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== Tables ===== */
+
+.slidev-layout table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.85em;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--c-border);
+}
+
+.slidev-layout table thead {
+  background: var(--c-dark-soft);
+}
+
+.slidev-layout table th {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  color: var(--c-brand-light);
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 2px solid var(--c-brand);
+  font-size: 0.9em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.slidev-layout table td {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--c-border);
+  color: var(--c-text-secondary);
+}
+
+.slidev-layout table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.slidev-layout table tbody tr:hover {
+  background: rgba(232, 93, 38, 0.05);
+}
+
+/* ===== Code blocks ===== */
+
+.slidev-layout pre {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--c-border);
+  background: var(--c-dark-soft) !important;
+}
+
+.slidev-layout code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+}
+
+.slidev-layout :not(pre) > code {
+  background: var(--c-dark-soft);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--c-brand-light);
+  border: 1px solid var(--c-border);
+}
+
+/* ===== Blockquotes ===== */
+
+.slidev-layout blockquote {
+  border-left: 3px solid var(--c-brand);
+  padding: var(--space-md) var(--space-lg);
+  background: rgba(232, 93, 38, 0.06);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  margin: var(--space-lg) 0;
+}
+
+.slidev-layout blockquote p {
+  font-size: 1.1em;
+  font-style: italic;
+  color: var(--c-text-primary);
+}
+
+/* ===== Slide transitions & v-click ===== */
+
+.slidev-vclick-target {
+  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.slidev-vclick-hidden {
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+}
+
+/* ===== Page number ===== */
+
+.slidev-page-number {
+  font-family: var(--font-body);
+  font-size: 0.75em;
+  color: var(--c-text-muted);
+}
+
+/* ===== Progress bar ===== */
+
+.slidev-progress {
+  background: var(--c-brand) !important;
+}
+
+/* ===== Utility classes ===== */
+
+.brand { color: var(--c-brand); }
+.brand-light { color: var(--c-brand-light); }
+.accent-blue { color: var(--c-accent-blue); }
+.accent-green { color: var(--c-accent-green); }
+.accent-amber { color: var(--c-accent-amber); }
+.accent-red { color: var(--c-accent-red); }
+.accent-purple { color: var(--c-accent-purple); }
+
+.text-muted { color: var(--c-text-muted); }
+.text-secondary { color: var(--c-text-secondary); }
+
+.card {
+  background: var(--c-dark-soft);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+}
+
+.card-hover {
+  transition: all 0.3s ease;
+}
+.card-hover:hover {
+  border-color: var(--c-brand);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--c-border), transparent);
+  margin: var(--space-lg) 0;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--c-brand-light), var(--c-accent-amber));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.tag {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.75em;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+.tag-brand { background: rgba(232, 93, 38, 0.15); color: var(--c-brand-light); }
+.tag-green { background: rgba(52, 199, 123, 0.15); color: var(--c-accent-green); }
+.tag-blue { background: rgba(74, 144, 217, 0.15); color: var(--c-accent-blue); }
+.tag-amber { background: rgba(245, 166, 35, 0.15); color: var(--c-accent-amber); }
+.tag-red { background: rgba(231, 76, 94, 0.15); color: var(--c-accent-red); }
+
+/* ===== Global grid utilities ===== */
+
+.slidev-layout .grid {
+  display: grid;
+  gap: 20px;
+}
+.slidev-layout .grid-2 { grid-template-columns: repeat(2, 1fr); }
+.slidev-layout .grid-3 { grid-template-columns: repeat(3, 1fr); }
+.slidev-layout .grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+/* ===== Gradient text variants ===== */
+
+.gradient-brand {
+  background: linear-gradient(135deg, var(--c-brand-light), var(--c-accent-amber));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-blue {
+  background: linear-gradient(135deg, var(--c-accent-blue), #7EC8E3);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-purple {
+  background: linear-gradient(135deg, var(--c-accent-purple), #C4B5FD);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-green {
+  background: linear-gradient(135deg, var(--c-accent-green), #6EE7B7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ===== Spacing utilities ===== */
+
+.spacer-sm { height: 16px; }
+.spacer-md { height: 32px; }
+.spacer-lg { height: 48px; }
+.mt-auto { margin-top: auto; }

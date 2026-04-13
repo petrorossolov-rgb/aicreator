@@ -1,0 +1,185 @@
+@startuml seq-ui-puml-generation
+title Генерация скелетона Go-сервиса из PUML-диаграммы через Web UI
+
+autonumber
+
+actor "Системный аналитик" as Analyst
+participant "Web UI" as UI
+participant "Core API" as API
+participant "Corporate SSO" as SSO
+participant "Audit Logger" as Audit
+participant "Redis\n(Task Queue)" as Redis
+participant "Celery Worker" as Celery
+participant "Orchestrator" as Orch
+participant "Template Repo\n(Corporate Git)" as Repo
+participant "AI Generator" as AIGen
+participant "Internal AI API\n(Qwen 3 235B)" as LLM
+participant "Post-processor\n(gofmt + golangci-lint)" as GoFmt
+participant "PostgreSQL" as DB
+
+== Загрузка спецификации ==
+
+Analyst -> UI : Загрузка PUML-файла\n(drag & drop или выбор файла)
+UI -> UI : Валидация формата файла (.puml)
+
+alt Неверный формат файла
+    UI --> Analyst : Ошибка: принимаются только .puml файлы
+end
+
+Analyst -> UI : Выбор целевого языка: Go\nВыбор фреймворка: Gin
+
+== Аутентификация через SSO ==
+
+UI -> API : POST /api/generate\n{ spec_content: <puml>, target: "go",\n  framework: "gin", sso_token }
+API -> SSO : Валидация SSO token
+activate SSO
+SSO --> API : TokenValid { user_id, roles, email }
+deactivate SSO
+
+alt Невалидный или просроченный SSO token
+    API --> UI : 401 Unauthorized
+    UI --> Analyst : Сессия истекла.\nПожалуйста, выполните вход заново.
+end
+
+== Аудит и создание асинхронной задачи ==
+
+API -> Audit : Запись audit-события\n{ user_id, action: generate,\n  source: puml, target: go/gin,\n  timestamp }
+activate Audit
+Audit --> API : OK
+deactivate Audit
+
+API -> Redis : Публикация задачи в очередь\n{ task_type: generate,\n  spec, target, framework,\n  user_id, priority: normal }
+activate Redis
+Redis --> API : task_id: "gen-7f3a2b1c"
+deactivate Redis
+
+API --> UI : 202 Accepted\n{ task_id: "gen-7f3a2b1c",\n  status: "pending",\n  poll_url: "/api/tasks/gen-7f3a2b1c" }
+
+note right of API
+  Генерация выполняется асинхронно.
+  UI получает task_id для отслеживания
+  статуса задачи.
+end note
+
+== Polling статуса задачи ==
+
+loop Каждые 3 секунды, пока status != completed|failed
+    UI -> API : GET /api/tasks/gen-7f3a2b1c
+    API -> DB : SELECT status FROM tasks\nWHERE id = 'gen-7f3a2b1c'
+    DB --> API : { status: "processing" }
+    API --> UI : { task_id, status: "processing",\n  progress: "Генерация кода..." }
+    UI --> Analyst : Отображение индикатора прогресса
+end
+
+== Обработка задачи в Celery Worker ==
+
+Redis -> Celery : Передача задачи воркеру
+activate Celery
+note over Celery
+  Воркер получает задачу из очереди Redis
+  и начинает выполнение
+end note
+
+Celery -> Orch : Вызов Orchestrator\n{ spec, target: go, framework: gin }
+
+== Загрузка стандартов и few-shot примеров ==
+
+Orch -> Repo : Получить стандарты и примеры\nдля Go / Gin
+activate Repo
+Repo --> Orch : go-standards.yaml,\ngin-service-template.md,\nfew-shot-examples/\n  [gin-crud.go, gin-middleware.go]
+deactivate Repo
+
+note over Orch
+  Оркестратор определяет AI-путь генерации
+  (источник — PUML, неструктурированная схема).
+  Формирует контекст для AI Generator.
+end note
+
+Orch -> AIGen : Запрос AI-генерации\n{ spec_puml, standards,\n  few_shot_examples, framework: gin }
+
+== Построение промпта и вызов LLM ==
+
+AIGen -> AIGen : Построение prompt:\n  1. System: корпоративные стандарты Go\n  2. Few-shot: примеры Gin-сервисов\n  3. User: PUML-диаграмма + задача генерации
+
+AIGen -> LLM : POST /v1/chat/completions\n{ model: "qwen3-235b",\n  messages: [system, examples..., user],\n  temperature: 0.2, max_tokens: 8192 }
+activate LLM
+
+note right of LLM
+  Низкая температура (0.2) обеспечивает
+  детерминированность и соответствие
+  корпоративным стандартам
+end note
+
+alt Timeout или ошибка LLM API
+    LLM --> AIGen : 503 Service Unavailable / Timeout
+    AIGen --> Orch : LLMError { retry_count: 3 }
+    Orch --> Celery : GenerationFailed { reason: "llm_unavailable" }
+    Celery -> DB : UPDATE tasks SET status='failed'\nWHERE id='gen-7f3a2b1c'
+    deactivate Celery
+    UI -> API : GET /api/tasks/gen-7f3a2b1c
+    API -> DB : SELECT status FROM tasks
+    DB --> API : { status: "failed" }
+    API --> UI : { status: "failed",\n  error: "AI-сервис недоступен. Попробуйте позже." }
+    UI --> Analyst : Генерация не удалась.\nОписание ошибки + кнопка "Повторить"
+end
+
+LLM --> AIGen : Сгенерированный Go код
+deactivate LLM
+
+== Постобработка ==
+
+AIGen --> Orch : Go код (черновик)
+
+Orch -> GoFmt : Форматирование и линтинг\nGo кода
+activate GoFmt
+GoFmt -> GoFmt : gofmt -w (форматирование)
+GoFmt -> GoFmt : golangci-lint run (линтинг)
+
+alt Линтинг выявил нарушения
+    note over GoFmt
+      Нарушения не блокируют доставку результата,
+      но добавляются как предупреждения
+    end note
+    GoFmt --> Orch : { code, lint_warnings: ["unused import ...",\n  "error not handled at line 42"] }
+else Код прошёл все проверки
+    GoFmt --> Orch : { code, lint_warnings: [] }
+end
+deactivate GoFmt
+
+== Сохранение результата ==
+
+Orch --> Celery : GenerationResult\n{ files, lint_warnings }
+Celery -> DB : INSERT INTO generation_results\n{ task_id, files_json, warnings,\n  status: "completed", completed_at }
+activate DB
+DB --> Celery : OK
+deactivate DB
+
+Celery -> DB : UPDATE tasks\nSET status='completed'\nWHERE id='gen-7f3a2b1c'
+deactivate Celery
+
+== Доставка результата пользователю ==
+
+UI -> API : GET /api/tasks/gen-7f3a2b1c
+API -> DB : SELECT * FROM tasks\nJOIN generation_results USING(task_id)
+DB --> API : { status: "completed", files, warnings }
+API --> UI : { status: "completed",\n  files: [{name, content}],\n  warnings: [...],\n  download_url: "/api/results/gen-7f3a2b1c/zip" }
+
+UI --> Analyst : Код готов!\nОтображение сгенерированных файлов\nс подсветкой синтаксиса
+
+opt Скачать архив
+    Analyst -> UI : Нажатие "Скачать ZIP"
+    UI -> API : GET /api/results/gen-7f3a2b1c/zip
+    API --> UI : application/zip
+    UI --> Analyst : Скачивание архива с файлами
+end
+
+opt Создать Merge Request
+    Analyst -> UI : Нажатие "Создать MR"
+    UI -> API : POST /api/results/gen-7f3a2b1c/publish\n{ branch: "feat/order-service-skeleton" }
+    API -> Repo : Коммит файлов в feature branch\n+ создание Merge Request
+    Repo --> API : { mr_url: "https://git.corp/..." }
+    API --> UI : { mr_url }
+    UI --> Analyst : MR создан: [ссылка на Merge Request]
+end
+
+@enduml

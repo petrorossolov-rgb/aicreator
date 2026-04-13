@@ -1,0 +1,116 @@
+/*
+ * Mermaid diagram styling — matches consulting theme palette
+ */
+
+/* Override Mermaid's default dark theme */
+.mermaid {
+  font-family: var(--font-body) !important;
+}
+
+.mermaid svg {
+  max-width: 100%;
+}
+
+/* Node styling */
+.mermaid .node rect,
+.mermaid .node circle,
+.mermaid .node polygon {
+  fill: var(--c-dark-soft) !important;
+  stroke: var(--c-brand) !important;
+  stroke-width: 1.5px !important;
+  rx: 8px;
+  ry: 8px;
+}
+
+.mermaid .node .label {
+  color: var(--c-text-primary) !important;
+  font-family: var(--font-body) !important;
+  font-size: 0.85em;
+}
+
+/* Edge styling */
+.mermaid .edgePath path.path {
+  stroke: var(--c-text-muted) !important;
+  stroke-width: 1.5px !important;
+}
+
+.mermaid .edgeLabel {
+  background: var(--c-dark) !important;
+  color: var(--c-text-secondary) !important;
+  font-size: 0.8em;
+}
+
+.mermaid marker path {
+  fill: var(--c-text-muted) !important;
+}
+
+/* Gantt chart */
+.mermaid .task {
+  rx: 4px;
+  ry: 4px;
+}
+
+.mermaid .done0,
+.mermaid .done1,
+.mermaid .done2,
+.mermaid .done3 {
+  fill: var(--c-brand) !important;
+  stroke: var(--c-brand-dark) !important;
+}
+
+.mermaid .active0,
+.mermaid .active1,
+.mermaid .active2,
+.mermaid .active3 {
+  fill: var(--c-accent-blue) !important;
+  stroke: var(--c-accent-blue) !important;
+}
+
+.mermaid .section0,
+.mermaid .section1,
+.mermaid .section2,
+.mermaid .section3 {
+  fill: rgba(232, 93, 38, 0.04) !important;
+}
+
+/* Pie chart */
+.mermaid .pieTitleText {
+  fill: var(--c-text-primary) !important;
+  font-family: var(--font-heading) !important;
+  font-weight: 600;
+}
+
+.mermaid .slice {
+  stroke: var(--c-dark) !important;
+  stroke-width: 2px !important;
+}
+
+/* Sequence diagram */
+.mermaid .actor {
+  fill: var(--c-dark-soft) !important;
+  stroke: var(--c-brand) !important;
+}
+
+.mermaid .actor-line {
+  stroke: var(--c-text-muted) !important;
+}
+
+.mermaid .messageLine0,
+.mermaid .messageLine1 {
+  stroke: var(--c-text-muted) !important;
+}
+
+.mermaid .messageText {
+  fill: var(--c-text-secondary) !important;
+  font-size: 0.85em;
+}
+
+/* XY chart */
+.mermaid .xychart-plot-line {
+  stroke: var(--c-brand) !important;
+  stroke-width: 2.5px !important;
+}
+
+.mermaid .xychart-plot-band {
+  fill: var(--c-brand) !important;
+}
