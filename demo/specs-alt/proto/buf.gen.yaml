@@ -1,0 +1,6 @@
+version: v2
+plugins:
+  - protoc_builtin: java
+    out: /generated/kotlin
+  - protoc_builtin: kotlin
+    out: /generated/kotlin

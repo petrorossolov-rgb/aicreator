@@ -1,0 +1,32 @@
+syntax = "proto3";
+package catalog.v1;
+
+option java_multiple_files = true;
+option java_package = "com.catalog.v1";
+
+// Minimal alternative spec for volume swap testing
+message Product {
+  string id = 1;
+  string name = 2;
+  string sku = 3;
+  int32 price_cents = 4;
+}
+
+service ProductService {
+  rpc GetProduct(GetProductRequest) returns (Product);
+  rpc ListProducts(ListProductsRequest) returns (ListProductsResponse);
+}
+
+message GetProductRequest {
+  string id = 1;
+}
+
+message ListProductsRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+}
+
+message ListProductsResponse {
+  repeated Product products = 1;
+  int32 total = 2;
+}
