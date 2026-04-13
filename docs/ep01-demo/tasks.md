@@ -382,10 +382,10 @@ Any delay in specs (T02, T03), Dockerfiles (T05, T06), or post-processing (T08, 
 - [x] T04: openapi-generator configs + mustache templates
 
 ### Wave 2
-- [ ] T05: F1 Kotlin: Dockerfile + generation script + test
-- [ ] T05a: Pre-flight: validate buf Kotlin generation in Docker
-- [ ] T06: F2 Go: Dockerfile + generation script + test
-- [ ] T07: F4 Python: Dockerfile + generation script + test
+- [x] T05: F1 Kotlin: Dockerfile + generation script + test
+- [x] T05a: Pre-flight: validate buf Kotlin generation in Docker
+- [x] T06: F2 Go: Dockerfile + generation script + test
+- [x] T07: F4 Python: Dockerfile + generation script + test
 
 ### Wave 3
 - [ ] T08: Kotlin post-processing: format + validate scripts + test
