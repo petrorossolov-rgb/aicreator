@@ -1,6 +1,6 @@
 version: v2
 plugins:
-  - remote: buf.build/protocolbuffers/java
+  - protoc_builtin: java
     out: /generated/kotlin
-  - remote: buf.build/protocolbuffers/kotlin
+  - protoc_builtin: kotlin
     out: /generated/kotlin

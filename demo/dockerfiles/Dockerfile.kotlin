@@ -1,0 +1,43 @@
+FROM eclipse-temurin:21-jdk-alpine
+
+# Install system dependencies
+RUN apk add --no-cache curl bash unzip
+
+# Install buf (proto generation tool)
+ARG BUF_VERSION=1.50.0
+RUN curl -sSL "https://github.com/bufbuild/buf/releases/download/v${BUF_VERSION}/buf-Linux-x86_64" \
+      -o /usr/local/bin/buf && \
+    chmod +x /usr/local/bin/buf
+
+# Install protoc (local plugin for java/kotlin codegen — avoids BSR remote plugin auth)
+ARG PROTOC_VERSION=29.3
+RUN curl -sSL "https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-linux-x86_64.zip" \
+      -o /tmp/protoc.zip && \
+    unzip -q /tmp/protoc.zip -d /usr/local && \
+    rm /tmp/protoc.zip
+
+# Install ktlint (Kotlin linter/formatter, used in format step)
+ARG KTLINT_VERSION=1.5.0
+RUN curl -sSL "https://github.com/pinterest/ktlint/releases/download/${KTLINT_VERSION}/ktlint" \
+      -o /usr/local/bin/ktlint && \
+    chmod +x /usr/local/bin/ktlint
+
+# Install Kotlin compiler (used in validate step)
+ARG KOTLIN_VERSION=2.1.10
+RUN curl -sSL "https://github.com/JetBrains/kotlin/releases/download/v${KOTLIN_VERSION}/kotlin-compiler-${KOTLIN_VERSION}.zip" \
+      -o /tmp/kotlin.zip && \
+    unzip -q /tmp/kotlin.zip -d /opt && \
+    rm /tmp/kotlin.zip
+ENV PATH="/opt/kotlinc/bin:${PATH}"
+
+# Download protobuf runtime JARs for compilation validation
+ARG PROTOBUF_VERSION=4.29.3
+RUN mkdir -p /opt/libs && \
+    curl -sSL "https://repo1.maven.org/maven2/com/google/protobuf/protobuf-java/${PROTOBUF_VERSION}/protobuf-java-${PROTOBUF_VERSION}.jar" \
+      -o /opt/libs/protobuf-java.jar && \
+    curl -sSL "https://repo1.maven.org/maven2/com/google/protobuf/protobuf-kotlin/${PROTOBUF_VERSION}/protobuf-kotlin-${PROTOBUF_VERSION}.jar" \
+      -o /opt/libs/protobuf-kotlin.jar
+
+WORKDIR /workspace
+
+ENTRYPOINT ["/bin/bash"]
