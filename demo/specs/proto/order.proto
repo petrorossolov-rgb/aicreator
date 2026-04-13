@@ -1,0 +1,86 @@
+syntax = "proto3";
+
+package logistics.v1;
+
+import "common.proto";
+import "google/protobuf/timestamp.proto";
+
+option java_multiple_files = true;
+option java_package = "com.logistics.v1";
+
+enum OrderStatus {
+  ORDER_STATUS_UNSPECIFIED = 0;
+  ORDER_STATUS_CREATED = 1;
+  ORDER_STATUS_CONFIRMED = 2;
+  ORDER_STATUS_PICKING = 3;
+  ORDER_STATUS_SHIPPED = 4;
+  ORDER_STATUS_DELIVERED = 5;
+  ORDER_STATUS_CANCELLED = 6;
+}
+
+message Order {
+  string order_id = 1;
+  string customer_id = 2;
+  Address shipping_address = 3;
+  repeated OrderItem items = 4;
+  OrderStatus status = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+message OrderItem {
+  string sku = 1;
+  string name = 2;
+  int32 quantity = 3;
+  int64 price_cents = 4;
+}
+
+message CreateOrderRequest {
+  string customer_id = 1;
+  Address shipping_address = 2;
+  repeated OrderItem items = 3;
+}
+
+message CreateOrderResponse {
+  Order order = 1;
+}
+
+message GetOrderRequest {
+  string order_id = 1;
+}
+
+message GetOrderResponse {
+  Order order = 1;
+}
+
+message ListOrdersRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+}
+
+message ListOrdersResponse {
+  repeated Order orders = 1;
+  string next_page_token = 2;
+}
+
+message UpdateOrderRequest {
+  Order order = 1;
+}
+
+message UpdateOrderResponse {
+  Order order = 1;
+}
+
+message DeleteOrderRequest {
+  string order_id = 1;
+}
+
+message DeleteOrderResponse {}
+
+service OrderService {
+  rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse);
+  rpc GetOrder(GetOrderRequest) returns (GetOrderResponse);
+  rpc ListOrders(ListOrdersRequest) returns (ListOrdersResponse);
+  rpc UpdateOrder(UpdateOrderRequest) returns (UpdateOrderResponse);
+  rpc DeleteOrder(DeleteOrderRequest) returns (DeleteOrderResponse);
+}

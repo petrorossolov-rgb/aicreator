@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package logistics.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option java_multiple_files = true;
+option java_package = "com.logistics.v1";
+
+// Address represents a physical location.
+message Address {
+  string street = 1;
+  string city = 2;
+  string region = 3;
+  string postal_code = 4;
+  string country = 5;
+}
+
+// Coordinates for geo-tracking.
+message Coordinates {
+  double latitude = 1;
+  double longitude = 2;
+}
