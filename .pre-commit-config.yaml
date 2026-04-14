@@ -17,6 +17,8 @@ repos:
           - sqlalchemy
           - typer
           - alembic
+          - types-pyyaml
+          - pyyaml
         args: [--strict]
         pass_filenames: false
         entry: mypy src/
