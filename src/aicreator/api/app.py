@@ -4,6 +4,7 @@ from fastapi import FastAPI
 
 from aicreator import __version__
 from aicreator.api.middleware import RequestIdMiddleware
+from aicreator.api.routes.generate import router as generate_router
 from aicreator.api.routes.health import router as health_router
 from aicreator.core.config import settings
 from aicreator.core.logging import setup_logging
@@ -21,6 +22,7 @@ def create_app() -> FastAPI:
     )
     application.add_middleware(RequestIdMiddleware)
     application.include_router(health_router, prefix="/api/v1")
+    application.include_router(generate_router, prefix="/api/v1")
 
     return application
 

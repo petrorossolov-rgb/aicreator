@@ -1,8 +1,8 @@
 """SQLAlchemy ORM models."""
 
 import enum
+import uuid
 from datetime import datetime
-from uuid import uuid4
 
 from sqlalchemy import DateTime, Index, Integer, String, Text, Uuid, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -26,7 +26,7 @@ class Generation(Base):
 
     __tablename__ = "generations"
 
-    id: Mapped[str] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     spec_type: Mapped[str] = mapped_column(String(50), nullable=False)
     language: Mapped[str] = mapped_column(String(50), nullable=False)
     function: Mapped[str] = mapped_column(String(50), nullable=False)
