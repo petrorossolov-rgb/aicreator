@@ -8,6 +8,13 @@ node_modules/
 __pycache__/
 *.pyc
 .venv/
+*.egg-info/
+.mypy_cache/
+.ruff_cache/
+.env
+dist/
+.pytest_cache/
+uv.lock
 
 # Java/Kotlin
 *.class

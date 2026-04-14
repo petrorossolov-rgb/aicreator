@@ -1,0 +1,51 @@
+[project]
+name = "aicreator"
+version = "0.1.0"
+description = "Platform for deterministic code generation from specifications"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.34",
+    "sqlalchemy>=2.0",
+    "alembic>=1.14",
+    "typer>=0.15",
+    "httpx>=0.28",
+    "rich>=13",
+    "pydantic-settings>=2.7",
+    "psycopg2-binary>=2.9",
+]
+
+[project.scripts]
+aicreator = "aicreator.cli.app:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/aicreator"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "pytest-cov>=6",
+    "ruff>=0.8",
+    "mypy>=1.13",
+    "pre-commit>=4",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
