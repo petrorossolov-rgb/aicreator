@@ -19,6 +19,8 @@ repos:
           - alembic
           - types-pyyaml
           - pyyaml
+          - httpx
+          - rich
         args: [--strict]
         pass_filenames: false
         entry: mypy src/
