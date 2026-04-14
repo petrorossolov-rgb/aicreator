@@ -79,5 +79,5 @@ def generate(
     gen_id = response.headers.get("X-Generation-ID", "unknown")
     file_count = len(zipfile.ZipFile(BytesIO(response.content)).namelist())
 
-    print_success(f"Generated {file_count} files → {output}")
+    print_success(f"Generated {file_count} files -> {output}")
     console.print(f"  Generation ID: [bold]{gen_id}[/bold]", highlight=False)

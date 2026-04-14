@@ -6,6 +6,7 @@ import "google/protobuf/timestamp.proto";
 
 option java_multiple_files = true;
 option java_package = "com.logistics.v1";
+option go_package = "logistics/v1";
 
 // Address represents a physical location.
 message Address {

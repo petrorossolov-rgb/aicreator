@@ -14,7 +14,7 @@ def print_error(message: str) -> None:
 
 def print_success(message: str) -> None:
     """Print success message in green."""
-    console.print(f"[bold green]✓[/bold green] {message}")
+    console.print(f"[bold green]OK[/bold green] {message}")
 
 
 def print_generation_table(data: dict) -> None:  # type: ignore[type-arg]
@@ -39,7 +39,7 @@ def print_generation_table(data: dict) -> None:  # type: ignore[type-arg]
     for key, label in field_order:
         value = data.get(key)
         if value is None:
-            value = "—"
+            value = "-"
         table.add_row(label, str(value))
 
     console.print(table)

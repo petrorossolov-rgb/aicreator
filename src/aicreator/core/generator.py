@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 class GeneratorConfig(BaseModel):
     """Configuration for a code generator."""
 
-    tool_path: str = ""
+    tool_path: str = "/opt/openapi-generator/openapi-generator-cli.jar"
     template_dir: Path | None = None
     additional_properties: dict[str, str] = Field(default_factory=dict)
     timeout: int = 120

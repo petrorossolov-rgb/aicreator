@@ -19,26 +19,42 @@ class OpenAPIBaseGenerator(BaseGenerator):
 
     generator_name: str = ""  # override in subclasses: "go-server" or "go"
 
+    def _resolve_spec_file(self, spec_path: Path) -> Path | None:
+        """Resolve spec_path to a single .yaml/.yml file.
+
+        If spec_path is a file, return it directly.
+        If spec_path is a directory, find the first .yaml/.yml file inside.
+        """
+        if spec_path.is_file():
+            return spec_path
+        if spec_path.is_dir():
+            for ext in ("*.yaml", "*.yml"):
+                files = sorted(spec_path.glob(ext))
+                if files:
+                    return files[0]
+        return None
+
     def validate(self, spec_path: Path) -> ValidationResult:
         errors: list[str] = []
 
-        if not spec_path.is_file():
-            errors.append(f"Spec file does not exist: {spec_path}")
+        resolved = self._resolve_spec_file(spec_path)
+        if resolved is None:
+            errors.append(f"No .yaml/.yml spec file found in: {spec_path}")
             return ValidationResult(valid=False, errors=errors)
 
-        if spec_path.suffix not in (".yaml", ".yml"):
-            errors.append(f"Spec file must be .yaml or .yml, got: {spec_path.suffix}")
+        if resolved.suffix not in (".yaml", ".yml"):
+            errors.append(f"Spec file must be .yaml or .yml, got: {resolved.suffix}")
             return ValidationResult(valid=False, errors=errors)
 
         try:
-            with open(spec_path) as f:
+            with open(resolved) as f:
                 data = yaml.safe_load(f)
         except yaml.YAMLError as exc:
             errors.append(f"Invalid YAML: {exc}")
             return ValidationResult(valid=False, errors=errors)
 
         if not isinstance(data, dict) or "openapi" not in data:
-            errors.append("YAML does not contain 'openapi' key — not a valid OpenAPI spec")
+            errors.append("YAML does not contain 'openapi' key - not a valid OpenAPI spec")
 
         return ValidationResult(valid=len(errors) == 0, errors=errors)
 
@@ -65,7 +81,17 @@ class OpenAPIBaseGenerator(BaseGenerator):
     def generate(self, spec_path: Path, output_dir: Path, config: GeneratorConfig) -> GenerationResult:
         output_dir.mkdir(parents=True, exist_ok=True)
 
-        cmd = self._build_command(spec_path, output_dir, config)
+        resolved = self._resolve_spec_file(spec_path)
+        if resolved is None:
+            return GenerationResult(
+                output_dir=output_dir,
+                files_generated=0,
+                duration_ms=0,
+                success=False,
+                error=f"No .yaml/.yml spec file found in: {spec_path}",
+            )
+
+        cmd = self._build_command(resolved, output_dir, config)
         start = time.monotonic()
 
         try:

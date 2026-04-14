@@ -17,18 +17,22 @@ RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.6 && \
 # Install golangci-lint
 RUN go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.63.4
 
-# Stage 2: Download buf and protoc binaries
+# Stage 2: Download buf and protoc binaries (multi-arch: amd64 + arm64)
 FROM alpine:3.21 AS binaries
+
+ARG TARGETARCH
 
 RUN apk add --no-cache curl unzip
 
-# Download buf v1.50.0
-RUN curl -sSL "https://github.com/bufbuild/buf/releases/download/v1.50.0/buf-Linux-x86_64" \
+# Download buf v1.50.0 (arch mapping: amd64 → x86_64, arm64 → aarch64)
+RUN BUF_ARCH=$(case "${TARGETARCH}" in arm64) echo "aarch64" ;; *) echo "x86_64" ;; esac) && \
+    curl -sSL "https://github.com/bufbuild/buf/releases/download/v1.50.0/buf-Linux-${BUF_ARCH}" \
     -o /usr/local/bin/buf && \
     chmod +x /usr/local/bin/buf
 
-# Download protoc v29.3
-RUN curl -sSL "https://github.com/protocolbuffers/protobuf/releases/download/v29.3/protoc-29.3-linux-x86_64.zip" \
+# Download protoc v29.3 (arch mapping: amd64 → x86_64, arm64 → aarch_64)
+RUN PROTOC_ARCH=$(case "${TARGETARCH}" in arm64) echo "aarch_64" ;; *) echo "x86_64" ;; esac) && \
+    curl -sSL "https://github.com/protocolbuffers/protobuf/releases/download/v29.3/protoc-29.3-linux-${PROTOC_ARCH}.zip" \
     -o /tmp/protoc.zip && \
     unzip /tmp/protoc.zip -d /opt/protoc && \
     rm /tmp/protoc.zip
