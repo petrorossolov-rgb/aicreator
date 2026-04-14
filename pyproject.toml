@@ -52,3 +52,7 @@ plugins = ["pydantic.mypy"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+markers = [
+    "e2e: end-to-end tests requiring Docker Compose (deselect with '-m not e2e')",
+]
+addopts = "-m 'not e2e'"
