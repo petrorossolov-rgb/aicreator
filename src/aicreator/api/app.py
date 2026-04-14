@@ -2,6 +2,7 @@
 
 from fastapi import FastAPI
 
+import aicreator.generators  # noqa: F401 — trigger generator registration
 from aicreator import __version__
 from aicreator.api.middleware import RequestIdMiddleware
 from aicreator.api.routes.generate import router as generate_router
