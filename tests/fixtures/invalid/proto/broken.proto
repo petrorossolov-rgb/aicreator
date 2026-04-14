@@ -1,0 +1,8 @@
+syntax = "proto3";
+package logistics.v1;
+
+// Deliberate syntax error: missing semicolon on field
+message BrokenOrder {
+  string id = 1
+  string name = 2;
+}

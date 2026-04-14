@@ -1,0 +1,5 @@
+openapi: "3.0.3"
+info:
+  title: Broken Logistics API
+  version: "1.0.0"
+# Deliberate error: missing 'paths' key (required by OpenAPI 3.0.3)

@@ -1,0 +1,95 @@
+syntax = "proto3";
+
+package logistics.v1;
+
+import "common.proto";
+import "google/protobuf/timestamp.proto";
+
+option java_multiple_files = true;
+option java_package = "com.logistics.v1";
+
+enum ShipmentStatus {
+  SHIPMENT_STATUS_UNSPECIFIED = 0;
+  SHIPMENT_STATUS_PENDING = 1;
+  SHIPMENT_STATUS_IN_TRANSIT = 2;
+  SHIPMENT_STATUS_OUT_FOR_DELIVERY = 3;
+  SHIPMENT_STATUS_DELIVERED = 4;
+  SHIPMENT_STATUS_RETURNED = 5;
+}
+
+message Location {
+  string name = 1;
+  Address address = 2;
+  Coordinates coordinates = 3;
+  google.protobuf.Timestamp timestamp = 4;
+}
+
+message Shipment {
+  string shipment_id = 1;
+  string order_id = 2;
+  string warehouse_id = 3;
+  Address origin = 4;
+  Address destination = 5;
+  repeated ShipmentItem items = 6;
+  ShipmentStatus status = 7;
+  repeated Location tracking_history = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp updated_at = 10;
+}
+
+message ShipmentItem {
+  string sku = 1;
+  int32 quantity = 2;
+  double weight_kg = 3;
+}
+
+message CreateShipmentRequest {
+  string order_id = 1;
+  string warehouse_id = 2;
+  Address destination = 3;
+  repeated ShipmentItem items = 4;
+}
+
+message CreateShipmentResponse {
+  Shipment shipment = 1;
+}
+
+message GetShipmentRequest {
+  string shipment_id = 1;
+}
+
+message GetShipmentResponse {
+  Shipment shipment = 1;
+}
+
+message ListShipmentsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+}
+
+message ListShipmentsResponse {
+  repeated Shipment shipments = 1;
+  string next_page_token = 2;
+}
+
+message UpdateShipmentRequest {
+  Shipment shipment = 1;
+}
+
+message UpdateShipmentResponse {
+  Shipment shipment = 1;
+}
+
+message DeleteShipmentRequest {
+  string shipment_id = 1;
+}
+
+message DeleteShipmentResponse {}
+
+service ShipmentService {
+  rpc CreateShipment(CreateShipmentRequest) returns (CreateShipmentResponse);
+  rpc GetShipment(GetShipmentRequest) returns (GetShipmentResponse);
+  rpc ListShipments(ListShipmentsRequest) returns (ListShipmentsResponse);
+  rpc UpdateShipment(UpdateShipmentRequest) returns (UpdateShipmentResponse);
+  rpc DeleteShipment(DeleteShipmentRequest) returns (DeleteShipmentResponse);
+}

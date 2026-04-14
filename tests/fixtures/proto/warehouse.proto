@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+package logistics.v1;
+
+import "common.proto";
+import "google/protobuf/timestamp.proto";
+
+option java_multiple_files = true;
+option java_package = "com.logistics.v1";
+
+message Warehouse {
+  string warehouse_id = 1;
+  string name = 2;
+  Address address = 3;
+  Coordinates coordinates = 4;
+  repeated InventoryItem inventory = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+message InventoryItem {
+  string sku = 1;
+  string name = 2;
+  int32 quantity_on_hand = 3;
+  int32 quantity_reserved = 4;
+  int32 reorder_point = 5;
+}
+
+message CreateWarehouseRequest {
+  string name = 1;
+  Address address = 2;
+  Coordinates coordinates = 3;
+}
+
+message CreateWarehouseResponse {
+  Warehouse warehouse = 1;
+}
+
+message GetWarehouseRequest {
+  string warehouse_id = 1;
+}
+
+message GetWarehouseResponse {
+  Warehouse warehouse = 1;
+}
+
+message ListWarehousesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+}
+
+message ListWarehousesResponse {
+  repeated Warehouse warehouses = 1;
+  string next_page_token = 2;
+}
+
+message UpdateWarehouseRequest {
+  Warehouse warehouse = 1;
+}
+
+message UpdateWarehouseResponse {
+  Warehouse warehouse = 1;
+}
+
+message DeleteWarehouseRequest {
+  string warehouse_id = 1;
+}
+
+message DeleteWarehouseResponse {}
+
+service WarehouseService {
+  rpc CreateWarehouse(CreateWarehouseRequest) returns (CreateWarehouseResponse);
+  rpc GetWarehouse(GetWarehouseRequest) returns (GetWarehouseResponse);
+  rpc ListWarehouse(ListWarehousesRequest) returns (ListWarehousesResponse);
+  rpc UpdateWarehouse(UpdateWarehouseRequest) returns (UpdateWarehouseResponse);
+  rpc DeleteWarehouse(DeleteWarehouseRequest) returns (DeleteWarehouseResponse);
+}
