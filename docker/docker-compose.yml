@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: aicreator
+      POSTGRES_PASSWORD: aicreator
+      POSTGRES_DB: aicreator
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aicreator"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.dev
+    ports:
+      - "8000:8000"
+    environment:
+      AICREATOR_DATABASE_URL: postgresql://aicreator:aicreator@postgres:5432/aicreator
+      AICREATOR_LOG_LEVEL: INFO
+      AICREATOR_LOG_FORMAT: json
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ../src:/app/src
+      - ../alembic:/app/alembic
+
+volumes:
+  pgdata:
