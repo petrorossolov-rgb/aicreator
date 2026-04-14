@@ -13,6 +13,10 @@ repos:
         additional_dependencies:
           - pydantic
           - pydantic-settings
+          - fastapi
+          - sqlalchemy
+          - typer
+          - alembic
         args: [--strict]
         pass_filenames: false
         entry: mypy src/
