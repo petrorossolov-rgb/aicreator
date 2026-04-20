@@ -31,6 +31,8 @@
 
 ## Docs Debt
 <!-- Items logged by /execute, /change, /incident. Resolved by /sync-docs. -->
+- [2026-04-20] Add troubleshooting entry "uv.lock: not found при docker build на свежем клоне" to `docs/ep02-foundation/demo/macbook-setup.md` (ref incident 2026-04-20 in ep02 log).
 
 ## Follow-ups
 <!-- Tasks deferred from /incident or /change that need proper implementation later. -->
+- [ ] [2026-04-20] Add CI smoke job "fresh-clone docker build" — clones repo into a temp directory and runs `docker compose -f docker/docker-compose.yml --profile prod build` to catch the class of bugs where build works on dev boxes but fails on fresh clones (triggered by uv.lock incident 2026-04-20).

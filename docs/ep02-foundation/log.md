@@ -91,3 +91,13 @@
 - **Files changed**: tests/e2e/{__init__,conftest}.py, tests/e2e/test_generate_proto_go.py, tests/e2e/test_generate_openapi_go.py, tests/e2e/test_error_handling.py, pyproject.toml
 - **Learnings**: `addopts = "-m 'not e2e'"` in pyproject.toml excludes e2e from default test run. Generator fixture for yield in conftest needs `# type: ignore[no-untyped-def]` for mypy strict (return type is Generator).
 - **Patterns**: Session-scoped `docker_compose_up` fixture manages lifecycle: `up -d --build` → health poll → `down -v`. E2E tests use httpx directly for API and subprocess for CLI.
+
+## [2026-04-20] — INCIDENT: uv.lock missing on fresh clone (MacBook demo)
+- **Symptom**: `docker compose --profile prod build` на MacBook падал на шаге `COPY pyproject.toml uv.lock ./` с ошибкой `"/uv.lock": not found` (оба сервиса: `api` via Dockerfile.dev и `api-prod` via Dockerfile).
+- **Root cause**: `uv.lock` был внесён в `.gitignore` (строка 17) с самого начала проекта, поэтому никогда не коммитился. На dev-машине (Windows) файл существовал локально, поэтому Docker build работал. На чистом клоне файла не было → `uv sync --frozen` невозможен.
+- **Fix** (commit 93defac): удалена строка `uv.lock` из `.gitignore`, закоммичен текущий lock-файл (59 resolved packages, `uv lock --check` прошёл).
+- **Prevention**:
+  - Lock-файлы (`uv.lock`, `package-lock.json`, `poetry.lock`, `go.sum`) — ВСЕГДА коммитим. Это требование и официальной uv-документации, и конституционного принципа «Determinism First». Рекомендация на будущее: при старте нового Python-проекта с uv сразу `git add uv.lock`.
+  - Для эпика ep02-foundation: T15 E2E-тесты не поймали эту регрессию потому что они запускаются из dev-окружения, где `uv.lock` уже существует локально. Следовало бы добавить smoke-тест «сборка из чистого клона» (простой CI job: `git clone` в temp dir → `docker compose build`).
+- **Docs debt**: в `docs/ep02-foundation/demo/macbook-setup.md` troubleshooting-секция не содержит этого случая — добавить при следующем /sync-docs.
+- **Time to resolve**: 1 фаза (диагноз уже был предвнесён пользователем).
