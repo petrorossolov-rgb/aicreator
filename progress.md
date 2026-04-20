@@ -28,11 +28,14 @@
 - **pre-commit mypy httpx/rich**: mirrors-mypy needs `httpx` and `rich` in `additional_dependencies` for CLI module type checking.
 - **CLI function→spec_type map**: `FUNCTION_SPEC_MAP = {"f1": "proto", "f2": "openapi", "f4": "openapi"}` in generate command. Language defaults to "go".
 - **JRE version in prod Dockerfile**: python:3.12-slim (Debian Trixie) ships JRE 21, not 17. openapi-generator 7.12.0 is compatible with JRE 11+.
+- **Compose profiles for dev/prod parallelism**: when `docker-compose.yml` hosts both a dev variant and a prod variant of the same service, both MUST be gated by `profiles:` (e.g. `[dev]` and `[prod]`). Leaving one without a profile makes it start unconditionally and collide with the other on host ports.
 
 ## Docs Debt
 <!-- Items logged by /execute, /change, /incident. Resolved by /sync-docs. -->
 - [2026-04-20] Add troubleshooting entry "uv.lock: not found при docker build на свежем клоне" to `docs/ep02-foundation/demo/macbook-setup.md` (ref incident 2026-04-20 in ep02 log).
+- [2026-04-20] Update `docs/ep02-foundation/plan.md:211` and `docs/ep02-foundation/tasks.md:381,386` — dev stack is now started via `docker compose --profile dev up`, not bare `docker compose up` (port-conflict incident 2026-04-20).
 
 ## Follow-ups
 <!-- Tasks deferred from /incident or /change that need proper implementation later. -->
 - [ ] [2026-04-20] Add CI smoke job "fresh-clone docker build" — clones repo into a temp directory and runs `docker compose -f docker/docker-compose.yml --profile prod build` to catch the class of bugs where build works on dev boxes but fails on fresh clones (triggered by uv.lock incident 2026-04-20).
+- [ ] [2026-04-20] Run e2e suite (`pytest -m e2e`) as part of pre-release demo checklist — would have caught the port-8000 conflict before the demo (currently excluded by `addopts = "-m 'not e2e'"`).

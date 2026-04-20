@@ -92,6 +92,20 @@
 - **Learnings**: `addopts = "-m 'not e2e'"` in pyproject.toml excludes e2e from default test run. Generator fixture for yield in conftest needs `# type: ignore[no-untyped-def]` for mypy strict (return type is Generator).
 - **Patterns**: Session-scoped `docker_compose_up` fixture manages lifecycle: `up -d --build` → health poll → `down -v`. E2E tests use httpx directly for API and subprocess for CLI.
 
+## [2026-04-20] — INCIDENT: port 8000 conflict on `--profile prod up`
+- **Symptom**: `docker compose --profile prod up -d` падал с `Bind for 0.0.0.0:8000 failed: port is already allocated`, контейнер `docker-api-1` не стартовал.
+- **Root cause**: Сервис `api` (Dockerfile.dev) был объявлен в `docker/docker-compose.yml` без `profiles:`. По семантике compose такой сервис стартует всегда — в том числе при `--profile prod`. Оба сервиса (`api` и `api-prod`) мапили хост-порт 8000 → конфликт. Проблема существовала с T14 (коммит dbe03b8, 2026-04-14), но не проявлялась на Windows потому что dev-стек и prod-стек никогда не поднимали одновременно.
+- **Fix** (commit 6fd3fa9): добавлен `profiles: [dev]` сервису `api`. Теперь:
+  - `docker compose --profile prod up` → postgres + api-prod
+  - `docker compose --profile dev up` → postgres + api
+  - `docker compose up` (без профиля) → только postgres (consistent compose behaviour)
+- **Verification**: `docker compose --profile <x> config --services` возвращает ожидаемый набор сервисов для каждого профиля.
+- **Prevention**:
+  - E2E-тесты (`tests/e2e/conftest.py`) используют `--profile prod up`, но исключены из дефолтного прогона pytest (`addopts = "-m 'not e2e'"`) → регрессия не ловилась. Следовало бы запускать e2e хотя бы на pre-release проверке демо.
+  - Общее правило: если сервис специфичен для dev-workflow (volume mounts, hot-reload) — ВСЕГДА назначать ему `profiles:`, никогда не оставлять «дефолтным».
+- **Docs debt**: [docs/ep02-foundation/plan.md](docs/ep02-foundation/plan.md) line 211, [docs/ep02-foundation/tasks.md](docs/ep02-foundation/tasks.md) lines 381, 386 описывают dev-стек как `docker compose up` — теперь требуется `--profile dev`. /sync-docs зафиксирует.
+- **Time to resolve**: 1 фаза (диагноз от пользователя + verify через `compose config`).
+
 ## [2026-04-20] — INCIDENT: uv.lock missing on fresh clone (MacBook demo)
 - **Symptom**: `docker compose --profile prod build` на MacBook падал на шаге `COPY pyproject.toml uv.lock ./` с ошибкой `"/uv.lock": not found` (оба сервиса: `api` via Dockerfile.dev и `api-prod` via Dockerfile).
 - **Root cause**: `uv.lock` был внесён в `.gitignore` (строка 17) с самого начала проекта, поэтому никогда не коммитился. На dev-машине (Windows) файл существовал локально, поэтому Docker build работал. На чистом клоне файла не было → `uv sync --frozen` невозможен.
