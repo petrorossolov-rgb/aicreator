@@ -14,7 +14,6 @@ __pycache__/
 .env
 dist/
 .pytest_cache/
-uv.lock
 
 # Java/Kotlin
 *.class
