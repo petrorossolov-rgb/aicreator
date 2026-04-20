@@ -31,6 +31,8 @@ services:
     volumes:
       - ../src:/app/src
       - ../alembic:/app/alembic
+    profiles:
+      - dev
 
   api-prod:
     build:
