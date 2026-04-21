@@ -378,15 +378,15 @@ T01 → T03 → T10 ↗
   - `docker/docker-compose.yml` — api + postgres services
   - `.env.example` — template for required env vars
 - **Acceptance criteria**:
-  - [ ] `docker compose up` starts API and PostgreSQL
+  - [ ] `docker compose -f docker/docker-compose.yml --profile dev up` starts API and PostgreSQL
   - [ ] PostgreSQL is accessible on port 5432 (default)
   - [ ] API is accessible on port 8000
   - [ ] `GET http://localhost:8000/api/v1/health` returns 200
   - [ ] Alembic migration creates `generations` table with correct schema
-  - [ ] `docker compose up` runs migrations automatically on startup (entrypoint script)
-  - [ ] `docker compose down -v` cleanly removes containers and volumes
+  - [ ] `docker compose -f docker/docker-compose.yml --profile dev up` runs migrations automatically on startup (entrypoint script)
+  - [ ] `docker compose -f docker/docker-compose.yml --profile dev down -v` cleanly removes containers and volumes
   - [ ] `.env.example` documents all required variables
-- **Tests required**: none (infrastructure — verified via docker compose up)
+- **Tests required**: none (infrastructure — verified via `docker compose --profile dev up`)
 - **Constitution check**: P2 (Containerized Platform) — everything in containers; P5 (Pinned Versions) — image tags pinned; P6 (Minimal Infrastructure) — only PostgreSQL
 - **Implementation notes**:
   - Dockerfile.dev: `FROM python:3.12-slim`, install uv, `uv sync`, `CMD uvicorn aicreator.api.app:app --host 0.0.0.0 --reload`

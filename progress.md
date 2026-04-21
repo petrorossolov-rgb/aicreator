@@ -32,10 +32,15 @@
 
 ## Docs Debt
 <!-- Items logged by /execute, /change, /incident. Resolved by /sync-docs. -->
-- [2026-04-20] Add troubleshooting entry "uv.lock: not found при docker build на свежем клоне" to `docs/ep02-foundation/demo/macbook-setup.md` (ref incident 2026-04-20 in ep02 log).
-- [2026-04-20] Update `docs/ep02-foundation/plan.md:211` and `docs/ep02-foundation/tasks.md:381,386` — dev stack is now started via `docker compose --profile dev up`, not bare `docker compose up` (port-conflict incident 2026-04-20).
 
 ## Follow-ups
 <!-- Tasks deferred from /incident or /change that need proper implementation later. -->
 - [ ] [2026-04-20] Add CI smoke job "fresh-clone docker build" — clones repo into a temp directory and runs `docker compose -f docker/docker-compose.yml --profile prod build` to catch the class of bugs where build works on dev boxes but fails on fresh clones (triggered by uv.lock incident 2026-04-20).
 - [ ] [2026-04-20] Run e2e suite (`pytest -m e2e`) as part of pre-release demo checklist — would have caught the port-8000 conflict before the demo (currently excluded by `addopts = "-m 'not e2e'"`).
+
+## [2026-04-20] — SYNC: Documentation synchronized
+- **Documents updated**: CLAUDE.md (Project Structure + Commands), docs/ep02-foundation/demo/macbook-setup.md (Step 4 CLI install + Troubleshooting uv.lock entry), docs/ep02-foundation/plan.md (lines 211, 243), docs/ep02-foundation/tasks.md (lines 381, 386, 389).
+- **Drift items found**: 6 (2 critical, 4 medium).
+- **Drift items resolved**: 6.
+- **Remaining debt**: 0.
+- **Baseline commit**: 4ba18d3 (post-mortem for port-8000 incident — last commit before sync).

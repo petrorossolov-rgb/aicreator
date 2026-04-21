@@ -66,13 +66,20 @@ curl http://localhost:8000/api/v1/health
 
 ## Шаг 4: Установка CLI
 
-```bash
-# Вариант 1: через pip
-pip install -e .
+Глобальная установка через uv (без необходимости создавать venv вручную):
 
-# Вариант 2: через uv (рекомендуется)
-uv pip install -e .
+```bash
+uv tool install --editable .
 ```
+
+Это поставит `aicreator` как изолированный uv-tool — команда будет доступна из любой директории.
+
+> **Если предпочитаете классический venv:**
+> ```bash
+> uv venv && source .venv/bin/activate
+> uv pip install -e .
+> ```
+> `uv pip install` (в отличие от `uv sync`) **не создаёт venv автоматически** — без активного окружения упадёт с `No virtual environment found`.
 
 Проверка:
 ```bash
@@ -174,6 +181,18 @@ docker info | grep Architecture
 
 # Если amd64 -- перейти в Docker Desktop -> Settings -> General
 # Выключить "Use Rosetta for x86_64/amd64 emulation on Apple Silicon"
+```
+
+### `uv.lock: not found` при сборке
+Симптом: на шаге 2 `docker compose ... build` падает с
+`failed to compute cache key: "/uv.lock": not found`.
+
+Причина: репозиторий клонировался **до коммита 93defac (2026-04-20)**, когда `uv.lock` был в `.gitignore` и не пушился.
+
+Решение:
+```bash
+git pull origin master
+# uv.lock теперь в репозитории, сборка пройдёт
 ```
 
 ### `aicreator` команда не найдена

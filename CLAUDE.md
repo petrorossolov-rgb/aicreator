@@ -13,9 +13,14 @@ Platform for automated code generation from specifications (Proto, OpenAPI, Asyn
 ## Project Structure
 
 ```
+src/aicreator/           # Platform Python package (api, cli, core, db, generators)
+tests/                   # Unit, integration, e2e tests
+docker/                  # Dockerfiles + docker-compose.yml (api dev, api-prod, postgres)
+alembic/                 # Database migrations (SQLAlchemy)
 docs/                    # Architecture docs, ADRs, epic artifacts
   architecture/adr/      # Architectural Decision Records
   {epicId}/              # Per-epic: research.md, plan.md, tasks.md, log.md
+    demo/                # Demo deliverables, runbooks, results (ep02+)
 demo/                    # ep01-demo: Docker-based code generation demo
 presentations/           # Slidev presentation materials
 ```
@@ -23,10 +28,20 @@ presentations/           # Slidev presentation materials
 ## Commands
 
 ```bash
+# Platform (ep02-foundation)
+docker compose -f docker/docker-compose.yml --profile dev  up -d --build   # Dev stack (hot-reload)
+docker compose -f docker/docker-compose.yml --profile prod up -d --build   # Prod stack
+uv sync                                                                    # Install deps (creates .venv)
+uv run pytest                                                              # Unit + integration (e2e excluded by default)
+uv run pytest -m e2e                                                       # E2E (requires Docker)
+uv tool install --editable .                                               # Install `aicreator` CLI globally
+aicreator health                                                           # Check API
+aicreator generate -f f1 -s tests/fixtures/proto -o /tmp/out -l go         # Run generation
+
 # Demo (ep01-demo)
-cd demo && docker compose up --build          # Full pipeline
-SPECS_DIR=./real-specs docker compose up       # With real specs (volume swap)
-docker compose up f1-kotlin format-kotlin      # Single function
+cd demo && docker compose up --build                                       # Full pipeline
+SPECS_DIR=./real-specs docker compose up                                   # With real specs (volume swap)
+docker compose up f1-kotlin format-kotlin                                  # Single function
 ```
 
 ## Constitution (Immutable Principles)

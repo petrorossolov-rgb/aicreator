@@ -208,7 +208,7 @@ Foundation: project structure, dependencies, database, health check.
 - [ ] **T03** — Database setup: SQLAlchemy models (`Generation`), engine, session management
 - [ ] **T04** — Alembic migrations + Docker Compose (api + postgres): initial migration, `docker-compose.yml`, `Dockerfile.dev`
 
-**Deliverable**: `docker compose up` starts API + PostgreSQL, `GET /api/v1/health` returns `{"status": "ok"}`, database tables created.
+**Deliverable**: `docker compose -f docker/docker-compose.yml --profile dev up` starts API + PostgreSQL, `GET /api/v1/health` returns `{"status": "ok"}`, database tables created.
 
 ### Phase 2: Core Logic (Wave 2) — T05-T08
 
@@ -240,7 +240,7 @@ CLI client, end-to-end integration, production Docker image.
 - [ ] **T14** — Multi-stage production Dockerfile: Go toolchain + JRE + buf + Python app in one image
 - [ ] **T15** — E2E tests: CLI → API → Generator → files on disk. Happy path + error cases (invalid spec, unsupported combination)
 
-**Deliverable**: `aicreator generate --function f1 --spec order.proto --output ./out` produces Go code. `aicreator status <id>` shows generation result. `docker compose up` runs the full platform.
+**Deliverable**: `aicreator generate --function f1 --spec order.proto --output ./out` produces Go code. `aicreator status <id>` shows generation result. `docker compose -f docker/docker-compose.yml --profile dev up` runs the full platform.
 
 ---
 
